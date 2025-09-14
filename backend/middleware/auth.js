@@ -10,7 +10,7 @@ export function authenticateToken(req, res, next) {
   }
 
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
+    const user = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
     req.user = user;
     next();
   } catch {
