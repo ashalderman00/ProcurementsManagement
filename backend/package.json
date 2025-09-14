@@ -1,18 +1,28 @@
-{
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.2"
-  }
-}
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/backend/package.json b/backend/package.json
+index 9956bcf7a0b5d94628c25d9b37b04af1ddfc8c09..f586719881a4846d9af66d6df51158137ab0952b 100644
+--- a/backend/package.json
++++ b/backend/package.json
+@@ -1,16 +1,18 @@
+ {
+   "name": "backend",
+   "version": "1.0.0",
+   "description": "",
+   "main": "index.js",
+   "scripts": {
+     "start": "node index.js",
+     "test": "echo \"Error: no test specified\" && exit 1"
+   },
+   "keywords": [],
+   "author": "",
+   "license": "ISC",
+   "dependencies": {
+-    "express": "^4.18.2"
++    "bcryptjs": "^2.4.3",
++    "express": "^4.18.2",
++    "jsonwebtoken": "^9.0.2"
+   }
+ }
+ 
+EOF
+)
