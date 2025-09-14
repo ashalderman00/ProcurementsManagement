@@ -2,49 +2,51 @@
 
 ## Roles and Permissions
 
+### Finance
+- **Responsibilities:** Oversee budgets and ensure that spending aligns with financial policies.
+- **Permissions:** Access all approved requests and purchase orders; view financial reports; approve high-value expenditures.
+- **Key Workflows:**
+  - Review approved requests for budget compliance.
+  - Monitor purchasing activities and expenditures.
+
 ### Requester
-- **Responsibilities:** Initiate procurement requests with clear descriptions and supporting documents.
+- **Responsibilities:** Initiate procurement requests with necessary details and justification.
 - **Permissions:** Create and view their own requests; track status; edit or cancel before approval.
 - **Key Workflows:**
-  - Submit new request with item details and justification.
-  - Monitor request lifecycle until completion.
+  - Draft and submit procurement requests.
+  - Follow the request through approval and purchasing stages.
 
-### Approver
-- **Responsibilities:** Review requests for completeness, budget compliance, and policy adherence.
-- **Permissions:** View pending requests; approve or reject; add comments or request changes.
-- **Key Workflows:**
-  - Receive notification when new request awaits approval.
-  - Approve, reject, or return for changes within the approval stage.
-
-### Procurement Officer
-- **Responsibilities:** Convert approved requests into purchase orders and coordinate with vendors.
+### Buyer
+- **Responsibilities:** Convert approved requests into purchase orders and handle vendor interactions.
 - **Permissions:** Access approved requests; create and manage purchase orders; update order status.
 - **Key Workflows:**
-  - Validate approved requests and select vendors.
-  - Place orders and record order confirmations.
-  - Update system when goods or services are received.
+  - Select vendors and issue purchase orders.
+  - Record delivery and close completed purchases.
 
-### Administrator
-- **Responsibilities:** Maintain system configuration, user accounts, and role assignments.
-- **Permissions:** Full system access including role management and audit logs.
+### Approver
+- **Responsibilities:** Evaluate requests for policy and budget compliance.
+- **Permissions:** View pending requests; approve, reject, or request changes.
+- **Key Workflows:**
+  - Receive notifications for requests requiring approval.
+  - Provide decisions and comments.
+
+### Admin
+- **Responsibilities:** Manage system configuration, user accounts, and role assignments.
+- **Permissions:** Full system access including user and role management and audit logs.
 - **Key Workflows:**
   - Create or deactivate user accounts.
-  - Assign roles and adjust permissions based on organizational policy.
+  - Assign roles and adjust permissions.
 
-## Workflows
+## Key Workflows
 
-### Request Lifecycle
-1. Requester submits a new procurement request.
-2. Approver reviews and approves/rejects the request.
-3. Procurement Officer converts approved request into a purchase order.
-4. Order status updated through fulfillment and closure.
+### Submitting Requests
+1. Requester submits a procurement request with details and justification.
+2. Request is routed to an Approver for initial review.
 
 ### Approvals
-- Approvers receive alerts for pending requests.
-- Approval decisions recorded with optional comments.
-- Rejected or returned requests notify the requester for revision.
+1. Approver evaluates the request and may approve, reject, or return for changes.
+2. Finance verifies budget availability for approved requests.
 
-### Order Placement
-1. Procurement Officer reviews approved requests and selects suppliers.
-2. Purchase order created and sent to vendor.
-3. Order tracked until goods/services are received and confirmed.
+### Purchasing
+1. Buyer converts an approved request into a purchase order and selects a vendor.
+2. Purchase order is tracked until goods or services are received and confirmed.
