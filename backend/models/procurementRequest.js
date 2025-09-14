@@ -13,3 +13,26 @@ export async function findRequestById(id) {
   const result = await pool.query('SELECT * FROM procurement_requests WHERE id = $1', [id]);
   return result.rows[0];
 }
+
+export async function getAllRequests() {
+  const result = await pool.query('SELECT * FROM procurement_requests');
+  return result.rows;
+}
+
+export async function updateRequest(id, { itemName, quantity, status }) {
+  const result = await pool.query(
+    `UPDATE procurement_requests
+     SET item_name = COALESCE($1, item_name),
+         quantity = COALESCE($2, quantity),
+         status = COALESCE($3, status)
+     WHERE id = $4
+     RETURNING *`,
+    [itemName, quantity, status, id],
+  );
+  return result.rows[0];
+}
+
+export async function deleteRequest(id) {
+  const result = await pool.query('DELETE FROM procurement_requests WHERE id = $1 RETURNING id', [id]);
+  return result.rowCount > 0;
+}

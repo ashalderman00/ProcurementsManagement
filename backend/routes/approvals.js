@@ -1,19 +1,23 @@
 import { Router } from 'express';
+import {
+  createApproval,
+  findApprovalById,
+  getAllApprovals,
+  updateApproval,
+  deleteApproval,
+} from '../models/approval.js';
 
 const router = Router();
 
-let approvals = [];
-let nextId = 1;
-
 // Get all approvals
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
+  const approvals = await getAllApprovals();
   res.json(approvals);
 });
 
 // Get a single approval by ID
-router.get('/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const approval = approvals.find((a) => a.id === id);
+router.get('/:id', async (req, res) => {
+  const approval = await findApprovalById(req.params.id);
   if (!approval) {
     return res.status(404).json({ error: 'Approval not found' });
   }
@@ -21,31 +25,26 @@ router.get('/:id', (req, res) => {
 });
 
 // Create a new approval
-router.post('/', (req, res) => {
-  const approval = { id: nextId++, status: 'pending', ...req.body };
-  approvals.push(approval);
+router.post('/', async (req, res) => {
+  const approval = await createApproval(req.body);
   return res.status(201).json(approval);
 });
 
 // Update an approval
-router.put('/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const index = approvals.findIndex((a) => a.id === id);
-  if (index === -1) {
+router.put('/:id', async (req, res) => {
+  const approval = await updateApproval(req.params.id, req.body);
+  if (!approval) {
     return res.status(404).json({ error: 'Approval not found' });
   }
-  approvals[index] = { id, ...approvals[index], ...req.body };
-  return res.json(approvals[index]);
+  return res.json(approval);
 });
 
 // Delete an approval
-router.delete('/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const index = approvals.findIndex((a) => a.id === id);
-  if (index === -1) {
+router.delete('/:id', async (req, res) => {
+  const success = await deleteApproval(req.params.id);
+  if (!success) {
     return res.status(404).json({ error: 'Approval not found' });
   }
-  approvals.splice(index, 1);
   return res.status(204).end();
 });
 
