@@ -1,34 +1,25 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/backend/package.json b/backend/package.json
-index 8764ed51676b7e6aaa7317cfe6eceb927d3557a6..372f80a969a2215ff2e94c107a619d1ed19b5b54 100644
---- a/backend/package.json
-+++ b/backend/package.json
-@@ -1,20 +1,23 @@
- {
-   "name": "backend",
-   "version": "1.0.0",
-   "private": true,
-   "type": "module",
-   "scripts": {
-     "start": "node index.js",
-     "lint": "eslint .",
--    "format": "prettier --write ."
-+    "format": "prettier --write .",
-+    "test": "vitest"
-   },
-   "dependencies": {
-     "express": "^4.19.2"
-   },
-   "devDependencies": {
-     "eslint": "^8.57.0",
-     "eslint-config-prettier": "^9.1.0",
-     "eslint-plugin-prettier": "^5.1.3",
--    "prettier": "^3.1.0"
-+    "prettier": "^3.1.0",
-+    "supertest": "^6.3.3",
-+    "vitest": "^1.5.0"
-   }
- }
- 
-EOF
-)
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.1.0",
+    "supertest": "^6.3.3",
+    "vitest": "^1.5.0"
+  }
+}

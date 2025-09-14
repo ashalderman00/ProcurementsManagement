@@ -1,6 +1,11 @@
 import { Router } from 'express';
+import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
+import { ROLES } from './auth.js';
 
 const router = Router();
+
+// all request routes require a valid JWT
+router.use(authenticateToken);
 
 let requests = [];
 let nextId = 1;
@@ -20,15 +25,15 @@ router.get('/:id', (req, res) => {
   return res.json(request);
 });
 
-// Create a new request
-router.post('/', (req, res) => {
+// Create a new request (Requester or Administrator)
+router.post('/', authorizeRoles(ROLES.REQUESTER, ROLES.ADMINISTRATOR), (req, res) => {
   const request = { id: nextId++, ...req.body };
   requests.push(request);
   return res.status(201).json(request);
 });
 
-// Update a request
-router.put('/:id', (req, res) => {
+// Update a request (Requester or Administrator)
+router.put('/:id', authorizeRoles(ROLES.REQUESTER, ROLES.ADMINISTRATOR), (req, res) => {
   const id = Number(req.params.id);
   const index = requests.findIndex((r) => r.id === id);
   if (index === -1) {
@@ -38,8 +43,8 @@ router.put('/:id', (req, res) => {
   return res.json(requests[index]);
 });
 
-// Delete a request
-router.delete('/:id', (req, res) => {
+// Delete a request (Administrator only)
+router.delete('/:id', authorizeRoles(ROLES.ADMINISTRATOR), (req, res) => {
   const id = Number(req.params.id);
   const index = requests.findIndex((r) => r.id === id);
   if (index === -1) {
