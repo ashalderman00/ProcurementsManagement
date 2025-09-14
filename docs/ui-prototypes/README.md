@@ -8,8 +8,8 @@ This directory houses early-stage wireframes for the procurement management inte
 
 ## Wireframes
 
-- Dashboard: [dashboard-wireframe.svg](dashboard-wireframe.svg)
-- Request Form: [request-form-wireframe.svg](request-form-wireframe.svg)
-- Approvals: [approval-wireframe.svg](approval-wireframe.svg)
+- [Request Submission](request-submission.md)
+- [Approvals](approvals.md)
+- [Dashboard](dashboard.md)
 
-These SVGs provide a simple reference for layout and component placement before high-fidelity designs are produced.
+These sketches provide a simple reference for layout and component placement before high-fidelity designs are produced.
