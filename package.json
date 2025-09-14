@@ -1,0 +1,21 @@
+{
+  "name": "procurementsmanagement",
+  "version": "1.0.0",
+  "description": "A procurement management website.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "lint": "eslint backend",
+    "format": "prettier --check backend frontend",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "prettier": "^3.0.0"
+  }
+}
