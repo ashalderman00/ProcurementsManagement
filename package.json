@@ -9,13 +9,16 @@
   "scripts": {
     "lint": "eslint backend",
     "format": "prettier --check backend frontend",
-    "test": "npm --prefix backend test && npm --prefix frontend test"
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "migrate": "node backend/migrate.js",
+    "dev": "npm run migrate && concurrently \"npm --prefix backend start\" \"npm --prefix frontend run dev\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "eslint": "^8.57.1",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "concurrently": "^8.2.2"
   }
 }
