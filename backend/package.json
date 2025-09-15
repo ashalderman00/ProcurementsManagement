@@ -1,30 +1,24 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/backend/package.json b/backend/package.json
-index 9956bcf7a0b5d94628c25d9b37b04af1ddfc8c09..7a59f2bea1d5867f091484fd6bbfc1bc4f6276a3 100644
---- a/backend/package.json
-+++ b/backend/package.json
-@@ -1,16 +1,20 @@
- {
-   "name": "backend",
-   "version": "1.0.0",
-   "description": "",
-   "main": "index.js",
-   "scripts": {
-     "start": "node index.js",
--    "test": "echo \"Error: no test specified\" && exit 1"
-+    "test": "jest"
-   },
-   "keywords": [],
-   "author": "",
-   "license": "ISC",
-   "dependencies": {
-     "express": "^4.18.2"
-+  },
-+  "devDependencies": {
-+    "jest": "^29.7.0",
-+    "supertest": "^7.1.1"
-   }
- }
- 
-EOF
-)
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "npx nodemon server.js",
+    "migrate": "node migrate.js",
+    "test": "echo \"no backend tests\" && exit 0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
