@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import RequestDetailRoute from "./pages/RequestDetailRoute";
 import { ToastProvider } from "./components/toast";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
@@ -31,6 +32,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ToastProvider><RouterProvider router={router} /></ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider><RouterProvider router={router} /></ToastProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );
