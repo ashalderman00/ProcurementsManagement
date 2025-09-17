@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Card, CardBody, CardHeader } from "../components/Card";
-import { T, Th, Td } from "../components/Table";  // ✅ shared
+import { T, Th, Td } from "../components/Table";
 import Button from "../components/Button";
 import Modal from "../components/modal";
 import { useToast } from "../components/toast";
+import { apiGet, apiPatch } from "../lib/api";
 
 export default function Approvals() {
   const toast = useToast();
@@ -14,8 +15,7 @@ export default function Approvals() {
   async function load() {
     try {
       setErr("");
-      const res = await fetch("/api/requests");
-      const data = await res.json();
+      const data = await apiGet("/api/requests");
       setItems(data.filter(i => i.status === "pending"));
     } catch (e) { setErr(e.message); }
   }
@@ -23,11 +23,7 @@ export default function Approvals() {
 
   async function doStatus(id, status) {
     try {
-      const res = await fetch("/api/requests/" + id, {
-        method:"PATCH", headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ status })
-      });
-      if (!res.ok) throw new Error("Failed: " + res.status);
+      await apiPatch(`/api/requests/${id}`, { status });
       setItems(items.filter(i => i.id !== id));
       toast.success("Status updated");
     } catch (e) { toast.error("Update failed"); }
@@ -41,7 +37,7 @@ export default function Approvals() {
         <div className="overflow-x-auto rounded-2xl">
           <T>
             <thead className="bg-slate-50">
-              <tr>
+              <tr className="border-b border-slate-100">
                 <Th align="left">Title</Th>
                 <Th align="right">Amount</Th>
                 <Th>Action</Th>
@@ -71,6 +67,7 @@ export default function Approvals() {
         title={"Confirm " + (confirm.next||"")}
         onCancel={()=>setConfirm({ open:false, id:null, next:null })}
         onConfirm={() => { doStatus(confirm.id, confirm.next); setConfirm({ open:false, id:null, next:null }); }}
+        confirmText="Yes, proceed"
       >
         Are you sure you want to set this request to <b>{confirm.next}</b>?
       </Modal>

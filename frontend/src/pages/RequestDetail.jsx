@@ -4,7 +4,7 @@ import Drawer from "../components/Drawer";
 import { Tabs } from "../components/Tabs";
 import Badge from "../components/Badge";
 import Button from "../components/Button";
-import { apiGet, apiUpload } from "../lib/api";
+import { apiGet, apiUpload, apiPost } from "../lib/api";
 
 export default function RequestDetailDrawer({ open, onClose }) {
   const { id } = useParams();
@@ -40,15 +40,15 @@ export default function RequestDetailDrawer({ open, onClose }) {
   }
 
   async function postComment(){
-    const token = localStorage.getItem("token")||"";
-    const res = await fetch(`/api/requests/${id}/comments`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
-      body: JSON.stringify({ body: newComment })
-    });
-    if (!res.ok) return alert("Comment failed");
+    if (!newComment.trim()) return;
+    await apiPost(`/api/requests/${id}/comments`, { body: newComment.trim() });
     setNewComment("");
     setComments(await apiGet(`/api/requests/${id}/comments`));
+  }
+
+  async function approve(){
+    await apiPost(`/api/requests/${id}/approve`, {});
+    setAudit(await apiGet(`/api/requests/${id}/audit`));
   }
 
   return (
@@ -69,7 +69,9 @@ export default function RequestDetailDrawer({ open, onClose }) {
               <Row k="Vendor" v={req.vendor_name || "—"} />
               <Row k="PO Number" v={req.po_number || "—"} />
               <Row k="Created" v={new Date(req.created_at).toLocaleString()} />
-              <a href={`/requests`} className="text-blue-700 underline">Open in Requests</a>
+              <div className="flex gap-2">
+                <Button variant="ghost" onClick={approve}>Approve</Button>
+              </div>
             </div>
           )}
 
@@ -112,8 +114,8 @@ export default function RequestDetailDrawer({ open, onClose }) {
           {tab==="Timeline" && (
             <ul className="space-y-2 text-sm">
               {audit.map((t,i)=>(
-                <li key={i} className="flex items-center justify-between rounded-lg border px-3 py-2">
-                  <span className="capitalize">{t.action}</span>
+                <li key={i} className="flex items-center justify-between rounded-lg border px-3 py-2 capitalize">
+                  <span>{t.action}</span>
                   <span className="text-slate-600">{new Date(t.created_at).toLocaleString()}</span>
                 </li>
               ))}
