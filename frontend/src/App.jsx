@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
 import { LogOut, ShoppingCart, CheckSquare, Settings as Cog, LayoutGrid, LogIn, UserPlus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import ThemeToggle from "./components/ThemeToggle";
 
 export default function App() {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -8,6 +9,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen gradient-hero text-slate-900 grid md:grid-cols-[240px_1fr]">
+      {/* Sidebar */}
       <aside className="hidden md:flex flex-col border-r border-slate-200 bg-white/70 backdrop-blur">
         <div className="px-5 py-4 font-bold tracking-wide border-b border-slate-100">🛒 Procurement</div>
         <nav className="p-3 space-y-1">
@@ -15,8 +17,9 @@ export default function App() {
           <Nav to="/requests" icon={<ShoppingCart size={16}/>}>Requests</Nav>
           <Nav to="/approvals" icon={<CheckSquare size={16}/>}>Approvals</Nav>
           <Nav to="/settings" icon={<Cog size={16}/>}>Settings</Nav>
+          <Nav to="/vendors" icon={<ShoppingCart size={16}/>}>Vendors</Nav>
         </nav>
-        <div className="mt-auto p-3 border-t border-slate-100">
+        <div className="mt-auto p-3 border-t border-slate-100 space-y-2">
           {user ? (
             <div className="flex items-center justify-between text-sm">
               <div className="text-slate-600 truncate max-w-[140px]">{user.email}</div>
@@ -28,9 +31,11 @@ export default function App() {
               <a className="inline-flex items-center gap-1 text-slate-700 press" href="/signup"><UserPlus size={16}/> Sign up</a>
             </div>
           )}
+          <ThemeToggle />
         </div>
       </aside>
 
+      {/* Main */}
       <div className="flex min-h-screen flex-col">
         <header className="md:hidden sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-slate-200">
           <div className="px-4 py-3 font-bold tracking-wide">🛒 Procurement</div>
