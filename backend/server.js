@@ -10,6 +10,7 @@ const fs = require('fs');
 const { pickRule, materializeStages, recomputeRequestStatus } = require('./workflow');
 
 const app = express();
+const extendRoutes = require("./routes.extras");
 app.use(cors());
 app.use(express.json());
 
@@ -225,4 +226,5 @@ app.get('/api/requests/:id/files', authRequired, async (req,res)=>{
   res.json(rows);
 });
 
+extendRoutes(app, pool, authRequired, roleRequired);
 app.listen(PORT, ()=> console.log(`Backend listening on http://localhost:${PORT}`));
