@@ -1,0 +1,3 @@
+ALTER TABLE requests
+  ADD COLUMN IF NOT EXISTS category_id INTEGER REFERENCES categories(id),
+  ADD COLUMN IF NOT EXISTS requester_id INTEGER REFERENCES users(id);

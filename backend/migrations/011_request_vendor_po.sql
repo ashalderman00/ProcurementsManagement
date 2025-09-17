@@ -1,0 +1,3 @@
+ALTER TABLE requests
+  ADD COLUMN IF NOT EXISTS vendor_id INTEGER REFERENCES vendors(id),
+  ADD COLUMN IF NOT EXISTS po_number TEXT;

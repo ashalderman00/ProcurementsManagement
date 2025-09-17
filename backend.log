@@ -1,0 +1,9 @@
+
+> backend@1.0.0 start
+> node server.js
+
+Backend listening on http://localhost:4000
+[API] GET /api/health
+[API] GET /api/health
+[API] GET /api/health
+[API] GET /api/health
