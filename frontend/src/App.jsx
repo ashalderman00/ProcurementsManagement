@@ -38,8 +38,19 @@ export default function App() {
       {/* Main */}
       <div className="flex min-h-screen flex-col">
         <header className="md:hidden sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-slate-200">
-          <div className="px-4 py-3 font-bold tracking-wide">🛒 Procurement</div>
-        </header>
+  <div className="px-4 py-3 font-bold tracking-wide flex items-center justify-between">
+    <span>🛒 Procurement</span>
+    {user ? (
+      <a className="text-sm text-blue-700" href="/requests">Requests</a>
+    ) : (
+      <div className="flex items-center gap-3 text-sm">
+        <a className="text-blue-700" href="/login">Login</a>
+        <a className="text-slate-700" href="/signup">Sign up</a>
+      </div>
+    )}
+  </div>
+</header>
+
         <AnimatedOutlet />
         <footer className="container py-6 text-xs text-slate-500">
           © {new Date().getFullYear()} Procurement Manager
