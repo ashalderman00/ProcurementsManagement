@@ -15,7 +15,9 @@ export default function Signup() {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       location.href = "/";
-    } catch (e) { setErr("Sign up failed"); }
+    } catch {
+      setErr("Sign up failed");
+    }
   }
 
   return (
