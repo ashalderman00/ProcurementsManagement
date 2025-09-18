@@ -4,9 +4,18 @@ command = "npm run build"
 publish = "dist"
 
 [build.environment]
+# Your Render backend base URL for production
 VITE_API_BASE = "https://procurementsmanagement.onrender.com/api"
 
+# SPA: route all paths to index.html so deep links work
 [[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200
+
+# Force redirect apex -> www
+[[redirects]]
+from = "https://procurementselite.com/*"
+to = "https://www.procurementselite.com/:splat"
+status = 301
+force = true
