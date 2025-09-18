@@ -1,101 +1,108 @@
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { CheckCircle2, Shield, Zap, Workflow, LineChart, CreditCard } from "lucide-react";
-
-const fade = (d=0)=>({ initial:{opacity:0,y:10}, whileInView:{opacity:1,y:0,transition:{duration:.45,delay:d}}, viewport:{once:true} });
-
 export default function Landing(){
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top bar */}
       <header className="border-b border-slate-200 bg-white/80 backdrop-blur sticky top-0 z-30">
-        <div className="container flex items-center justify-between py-4">
-          <div className="font-semibold tracking-wide text-slate-900">🛒 Procurement</div>
+        <div className="container max-w-6xl mx-auto flex items-center justify-between py-4">
+          <div className="font-semibold tracking-wide text-slate-900">🛒 ProcurementsElite</div>
           <nav className="hidden md:flex items-center gap-6 text-sm">
+            <a href="#solutions" className="text-slate-700 hover:text-slate-900">Solutions</a>
             <a href="#features" className="text-slate-700 hover:text-slate-900">Features</a>
-            <a href="#how" className="text-slate-700 hover:text-slate-900">How it works</a>
             <a href="#pricing" className="text-slate-700 hover:text-slate-900">Pricing</a>
-            <Link to="/login" className="text-blue-700">Log in</Link>
-            <Link to="/signup" className="rounded-lg bg-brand-600 text-white px-4 py-2 hover:bg-brand-700 shadow-card">Get started</Link>
+            <a href="#contact" className="rounded-lg bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 shadow">Contact</a>
           </nav>
         </div>
       </header>
 
       {/* HERO */}
       <section className="hero">
-        <div className="container py-14 md:py-20">
-          <motion.h1 {...fade(.05)} className="text-3xl md:text-5xl font-semibold tracking-tight text-slate-900 max-w-3xl">
-            Procurement that routes itself — fast approvals, tight controls.
-          </motion.h1>
-          <motion.p {...fade(.15)} className="mt-4 text-slate-600 max-w-2xl">
-            Intake once. Policy-driven approvals. Vendor controls. Budget visibility. All without the email ping-pong.
-          </motion.p>
-          <motion.div {...fade(.25)} className="mt-6 flex flex-wrap gap-3">
-            <Link to="/signup" className="rounded-lg bg-brand-600 text-white px-5 py-2.5 hover:bg-brand-700 shadow-card">Create free account</Link>
-            <Link to="/app/requests" className="rounded-lg border px-5 py-2.5 hover:bg-white/80">Try the app</Link>
-          </motion.div>
+        <div className="container max-w-6xl mx-auto py-16 md:py-24">
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-slate-900 max-w-3xl">
+            Modern procurement that’s fast, controlled, and audit-ready.
+          </h1>
+          <p className="mt-5 text-slate-600 max-w-2xl">
+            Intake once. Policy-driven approvals. Vendor controls. Budget visibility. Ditch the email ping-pong.
+          </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <a href="#contact" className="rounded-lg bg-blue-600 text-white px-5 py-2.5 hover:bg-blue-700 shadow">Talk to us</a>
+            <a href="#features" className="rounded-lg border px-5 py-2.5 hover:bg-white/80">See features</a>
+          </div>
 
-          {/* Metrics strip */}
-          <motion.div {...fade(.35)} className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Metrics */}
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
             <Metric k="Time to approve" v="2.1h" />
-            <Metric k="PO coverage" v="96%" />
             <Metric k="Policy match" v="99%" />
+            <Metric k="PO coverage" v="96%" />
             <Metric k="Vendors tracked" v="1,240" />
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* Brand strip (placeholder logos) */}
-      <section className="container py-8">
-        <div className="text-xs uppercase tracking-wider text-slate-500 mb-3">Trusted by modern teams</div>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 opacity-70">
-          {["Acme","Northwind","Globex","Umbrella","Stark","Wayne"].map(n=>(
-            <div key={n} className="gborder"><div className="inside flex items-center justify-center h-12 text-sm text-slate-600">{n}</div></div>
-          ))}
+      {/* SOLUTIONS */}
+      <section id="solutions" className="container max-w-6xl mx-auto py-14">
+        <h2 className="text-3xl font-semibold tracking-tight">Built for teams that buy</h2>
+        <p className="text-slate-600 mt-1 max-w-2xl">Finance, IT, and Operations stay aligned with clear controls and visibility.</p>
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          <Card title="Finance" text="Budgets, POs, and invoice matching. See spend by category & vendor." />
+          <Card title="IT & Security" text="Policy routing by vendor risk. Block/allow vendors with a click." />
+          <Card title="Operations" text="Lightning intake and auto-routing. Fewer pings, faster approvals." />
         </div>
       </section>
 
       {/* FEATURES */}
-      <section id="features" className="container py-10">
-        <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">Everything in one flow</h2>
-        <p className="text-slate-600 mt-1">Intake → Policy → Approvals → PO/Invoice → Audit & Insights</p>
+      <section id="features" className="container max-w-6xl mx-auto py-10">
+        <h2 className="text-3xl font-semibold tracking-tight">Everything in one flow</h2>
         <div className="mt-6 grid md:grid-cols-3 gap-4">
-          <Feature icon={<Zap className="text-brand-600" />} title="Lightning intake" text="One form for SaaS, hardware, and services. Attach quotes and pick vendors." />
-          <Feature icon={<Workflow className="text-mint-500" />} title="Policy routing" text="Rules by amount, category, vendor risk, cost center — auto-select approvers." />
-          <Feature icon={<Shield className="text-iris-500" />} title="Controls that scale" text="Block risky vendors, enforce budgets, and require multi-step approvals." />
-          <Feature icon={<CreditCard className="text-brand-600" />} title="PO & invoice" text="Auto-carry request details to POs; upload invoices and receipts later." />
-          <Feature icon={<LineChart className="text-mint-500" />} title="Budget visibility" text="Live category/cost-center progress bars and vendor spend analytics." />
-          <Feature icon={<CheckCircle2 className="text-iris-500" />} title="Audit ready" text="Every action logged with actor, timestamp, and metadata for export." />
+          <Feature title="Smart intake" text="One form for SaaS, hardware, services—with attachments and vendor pickers." />
+          <Feature title="Policy routing" text="Rules by amount, category, vendor risk, cost center—no manual triage." />
+          <Feature title="Approvals & audit" text="Sequential approvals with comments, timeline, and exportable audit log." />
+          <Feature title="PO & invoice" text="Auto-carry request details to POs; upload invoices and receipts later." />
+          <Feature title="Budgets" text="Live category/cost-center progress bars and vendor spend analytics." />
+          <Feature title="Vendor controls" text="Block risky vendors, require extra approvals, and track renewals." />
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how" className="container py-12">
-        <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">How it works</h2>
+      {/* PRICING */}
+      <section id="pricing" className="container max-w-6xl mx-auto py-12">
+        <h2 className="text-3xl font-semibold tracking-tight">Simple pricing</h2>
+        <p className="text-slate-600 mt-1 max-w-2xl">Start free. Upgrade when your team needs more control.</p>
         <div className="mt-6 grid md:grid-cols-3 gap-4">
-          <Step n="1" title="Submit" text="Requester fills the intake (title, amount, category, vendor, attachments)." />
-          <Step n="2" title="Route" text="Policy picks approvers automatically (manager → finance → security)." />
-          <Step n="3" title="Purchase" text="Final approval triggers PO; reconcile with invoices/receipts later." />
+          <Price name="Starter" price="$0" blurb="For small teams getting started" items={["Unlimited requests","Basic policies","Email support"]}/>
+          <Price name="Growth" price="$99" blurb="For growing teams" items={["Advanced policies","PO & invoices","Vendor controls"]} highlight/>
+          <Price name="Enterprise" price="Custom" blurb="For org-wide rollouts" items={["SSO/SAML","Custom approvals","Dedicated support"]}/>
         </div>
       </section>
 
-      {/* CTA */}
-      <section id="pricing" className="container py-12">
+      {/* CONTACT (Netlify Forms) */}
+      <section id="contact" className="container max-w-6xl mx-auto py-14">
         <div className="gborder card-glow">
-          <div className="inside p-6 md:p-8 text-center">
-            <h3 className="text-xl font-semibold">Start free • No credit card</h3>
-            <p className="text-slate-600 mt-1">Invite your team and set your first policy in minutes.</p>
-            <div className="mt-5 flex justify-center gap-3">
-              <Link to="/signup" className="rounded-lg bg-brand-600 text-white px-5 py-2.5 hover:bg-brand-700">Get started</Link>
-              <Link to="/login" className="rounded-lg border px-5 py-2.5 hover:bg-white/80">Log in</Link>
-            </div>
+          <div className="inside p-6 md:p-8">
+            <h2 className="text-2xl font-semibold">Tell us about your procurement needs</h2>
+            <p className="text-slate-600 mt-1">We’ll reach out within one business day.</p>
+
+            {/* Netlify form: shows in Netlify → Forms */}
+            <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" className="mt-6 grid md:grid-cols-2 gap-4">
+              <input type="hidden" name="form-name" value="contact" />
+              <p className="hidden">
+                <label>Don’t fill this out: <input name="bot-field" /></label>
+              </p>
+              <input name="name" required className="rounded-lg border px-3 py-2" placeholder="Your name"/>
+              <input name="email" required type="email" className="rounded-lg border px-3 py-2" placeholder="Your email"/>
+              <input name="company" className="rounded-lg border px-3 py-2" placeholder="Company"/>
+              <input name="team_size" className="rounded-lg border px-3 py-2" placeholder="Team size"/>
+              <textarea name="message" className="md:col-span-2 rounded-lg border px-3 py-2 h-28" placeholder="What would you like to improve?"></textarea>
+              <div className="md:col-span-2">
+                <button className="rounded-lg bg-blue-600 text-white px-5 py-2.5 hover:bg-blue-700 shadow">Send message</button>
+              </div>
+            </form>
+
           </div>
         </div>
       </section>
 
       <footer className="border-t border-slate-200 bg-white/80 backdrop-blur">
-        <div className="container py-6 text-xs text-slate-500 flex flex-col md:flex-row items-center justify-between gap-2">
-          <span>© {new Date().getFullYear()} Procurement Manager</span>
+        <div className="container max-w-6xl mx-auto py-6 text-xs text-slate-500 flex flex-col md:flex-row items-center justify-between gap-2">
+          <span>© {new Date().getFullYear()} ProcurementsElite</span>
           <span className="flex gap-4">
             <a href="/privacy" className="hover:underline">Privacy</a>
             <a href="/terms" className="hover:underline">Terms</a>
@@ -114,23 +121,28 @@ function Metric({k,v}) {
     </div></div>
   );
 }
-function Feature({icon, title, text}) {
+function Card({title,text}){ return (
+  <div className="card p-5">
+    <div className="text-base font-semibold">{title}</div>
+    <p className="text-sm text-slate-600 mt-2">{text}</p>
+  </div>
+);}
+function Feature({title,text}){ return (
+  <div className="card p-5">
+    <div className="text-base font-semibold">{title}</div>
+    <p className="text-sm text-slate-600 mt-2">{text}</p>
+  </div>
+);}
+function Price({name,price,blurb,items,highlight}){
   return (
-    <motion.div {...{initial:{opacity:0,y:8}, whileInView:{opacity:1,y:0,transition:{duration:.35}}, viewport:{once:true}}} className="card p-5">
-      <div className="flex items-center gap-2">
-        <div className="h-9 w-9 rounded-lg bg-brand-50 flex items-center justify-center">{icon}</div>
-        <div className="text-base font-semibold">{title}</div>
-      </div>
-      <p className="text-sm text-slate-600 mt-2">{text}</p>
-    </motion.div>
-  );
-}
-function Step({n,title,text}) {
-  return (
-    <div className="card p-5">
-      <div className="text-xs text-slate-500">Step {n}</div>
-      <div className="font-semibold mt-1">{title}</div>
-      <p className="text-sm text-slate-600 mt-1">{text}</p>
+    <div className={`card p-6 ${highlight?'ring-2 ring-blue-500':''}`}>
+      <div className="text-sm text-slate-500">{name}</div>
+      <div className="text-3xl font-semibold mt-1">{price}</div>
+      <p className="text-slate-600 mt-1">{blurb}</p>
+      <ul className="text-sm text-slate-700 mt-3 space-y-1">
+        {items.map((i,idx)=><li key={idx}>• {i}</li>)}
+      </ul>
+      <a href="#contact" className="inline-block mt-4 rounded-lg bg-blue-600 text-white px-4 py-2 hover:bg-blue-700">Get in touch</a>
     </div>
   );
 }
