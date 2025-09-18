@@ -1,131 +1,131 @@
 export default function Landing() {
   const stats = [
-    { label: "Average approval time", value: "2.1h" },
-    { label: "Policy match", value: "99%" },
-    { label: "PO coverage", value: "96%" },
-    { label: "Spend under management", value: "$1.2B" },
+    { label: "Cycle time reduction", value: "58%" },
+    { label: "Policy alignment", value: "99.4%" },
+    { label: "Stakeholder satisfaction", value: "4.9/5" },
+    { label: "Spend under guidance", value: "$3.2B" },
   ];
 
   const solutions = [
     {
-      title: "Finance",
+      title: "Finance Leadership",
       body:
-        "Consolidated budgets, PO orchestration, and accrual-ready reporting so close never slips.",
+        "Reliable forecasting, automated commitments, and close-ready documentation that instills board confidence.",
     },
     {
-      title: "IT & Security",
+      title: "Technology & Security",
       body:
-        "Policy routing by vendor risk, dynamic questionnaires, and a living system of record for every supplier.",
+        "Risk-aligned guardrails, supplier intelligence, and audit trails embedded from intake through renewal.",
     },
     {
-      title: "Operations",
+      title: "Operations & Business Partners",
       body:
-        "Guided intake, auto-notifications, and rich insights to keep stakeholders aligned without chasing updates.",
+        "Guided requests, proactive status updates, and portfolio insights so stakeholders stay informed without chasing.",
     },
   ];
 
   const features = [
     {
-      title: "Unified intake",
+      title: "Intake concierge",
       copy:
-        "Route SaaS, hardware, and services through a single front door with conditional logic and attachments.",
-      icon: "🎯",
+        "Route every request through a curated digital front desk with conditional logic, document capture, and SLA timers.",
+      icon: "01",
     },
     {
-      title: "Embedded policy",
+      title: "Policy intelligence",
       copy:
-        "Thresholds by spend, region, and vendor tier keep governance invisible yet always-on.",
-      icon: "🛡️",
+        "Maintain global policies in one rules engine that flexes for geography, spend limits, and supplier risk tiers.",
+      icon: "02",
     },
     {
-      title: "Approvals with context",
+      title: "Contextual approvals",
       copy:
-        "Decision makers see supplier health, contracts, and budget impact in one secure view.",
-      icon: "🧭",
+        "Decision makers review supplier health, commercial terms, and budget impact without leaving the approval flow.",
+      icon: "03",
     },
     {
-      title: "PO & invoice sync",
+      title: "ERP & CLM harmony",
       copy:
-        "Generate POs in seconds and mirror updates back to ERP—no more spreadsheet gymnastics.",
-      icon: "🔁",
+        "Generate purchase orders, surface contract clauses, and synchronize updates to your financial core in real time.",
+      icon: "04",
     },
     {
-      title: "Budget telemetry",
+      title: "Executive visibility",
       copy:
-        "Live burn-down, variance alerts, and executive dashboards purpose-built for procurement leaders.",
-      icon: "📊",
+        "Monitor burn, benchmarks, and variance through executive dashboards built for procurement steering committees.",
+      icon: "05",
     },
     {
-      title: "Vendor lifecycle",
+      title: "Supplier lifecycle",
       copy:
-        "Track renewals, obligations, and compliance artifacts with automated reminders and ownership.",
-      icon: "🔐",
+        "Track onboarding, renewals, obligations, and compliance evidence with automated reminders and ownership.",
+      icon: "06",
     },
   ];
 
   const steps = [
     {
-      title: "Intake",
+      title: "Discover",
       description:
-        "Requesters answer only what’s needed. Playbooks choose paths by spend, vendor risk, and category.",
+        "Requesters answer only what’s required. Playbooks adapt to spend thresholds, criticality, and vendor posture.",
     },
     {
-      title: "Collaborate",
+      title: "Coordinate",
       description:
-        "Finance, IT, and Legal work in a shared workspace with structured approvals and clear accountability.",
+        "Finance, IT, Legal, and Security collaborate in one workspace with structured approvals and transparent tasks.",
     },
     {
-      title: "Activate",
+      title: "Authorize",
       description:
-        "Generate POs, route contracts, and sync data back to ERP, Slack, and the tools you already rely on.",
+        "Contracts, POs, and supplier data synchronize to ERP, CLM, and collaboration tools with traceable ownership.",
     },
     {
-      title: "Measure",
+      title: "Optimize",
       description:
-        "Out-of-the-box reporting surfaces savings, cycle time, and policy adherence for every business unit.",
+        "Interactive analytics surface savings, cycle time, and policy adherence for each business unit and supplier.",
     },
   ];
 
   const testimonials = [
     {
       name: "Maya Patel",
-      role: "VP of Finance, Northwind",
+      role: "Chief Financial Officer, Northwind",
       quote:
-        "ProcurementsElite gave us an operating system for spend. Our team closes the books in hours, not days.",
+        "Procurement Manager reframed spend governance as a competitive advantage. Close is faster and board reporting is effortless.",
     },
     {
       name: "Noah Ramirez",
-      role: "Head of IT, Astra Labs",
+      role: "Head of Technology, Astra Labs",
       quote:
-        "The policy routing is the real differentiator. Vendors never slip through without the right controls anymore.",
+        "Our approvers finally see the full picture—risk, contracts, and budget impact—in one review window. It changed how we partner with the business.",
     },
     {
       name: "Lucia Greer",
       role: "Director of Operations, Haven Homes",
       quote:
-        "Stakeholders have complete visibility. Adoption was instant because the experience feels crafted for them.",
+        "Stakeholders trust the process because Procurement Manager provides proactive updates and measurable progress.",
     },
   ];
 
-  const plans = [
+  const engagements = [
     {
-      name: "Starter",
-      price: "$0",
-      blurb: "For teams formalizing procurement",
-      items: ["Unlimited requests", "Standard workflows", "Email support"],
+      name: "Foundation",
+      investment: "Tailored onboarding",
+      blurb: "Establish an executive-ready intake and approval discipline for emerging procurement teams.",
+      items: ["Discovery sprints", "Configured playbooks", "Change enablement toolkit"],
     },
     {
-      name: "Growth",
-      price: "$149",
-      blurb: "For scaling organizations",
-      items: ["Advanced policy engine", "ERP & Slack sync", "Vendor lifecycle tracking"],
+      name: "Acceleration",
+      investment: "Co-managed partnership",
+      blurb: "Scale cross-functional governance with embedded specialists and integrated systems.",
+      items: ["Advanced policy design", "ERP & CLM integrations", "Quarterly executive reviews"],
       highlight: true,
     },
     {
       name: "Enterprise",
-      price: "Custom",
-      blurb: "For global procurement leaders",
-      items: ["SSO & SCIM", "Dedicated success", "Custom data residency"],
+      investment: "Global transformation",
+      blurb: "Reimagine procurement as a strategic command center across regions and business units.",
+      items: ["Dedicated transformation lead", "Regulatory alignment", "Custom analytics program"],
     },
   ];
 
@@ -134,17 +134,14 @@ export default function Landing() {
       <header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/70 backdrop-blur-lg">
         <div className="shell flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
-            <div className="brand-mark">PE</div>
-            <span className="font-semibold text-lg tracking-tight">ProcurementsElite</span>
+            <div className="brand-mark">PM</div>
+            <span className="font-semibold text-lg tracking-tight">Procurement Manager</span>
           </div>
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
             <a href="#solutions" className="hover:text-slate-900 transition">Solutions</a>
             <a href="#features" className="hover:text-slate-900 transition">Features</a>
-            <a href="#pricing" className="hover:text-slate-900 transition">Pricing</a>
-            <a
-              href="#contact"
-              className="rounded-full bg-blue-600 text-white px-4 py-2 shadow-sm shadow-blue-500/30 hover:bg-blue-700 transition"
-            >
+            <a href="#engagements" className="hover:text-slate-900 transition">Engagements</a>
+            <a href="#contact" className="btn-accent btn-accent--subtle px-4 py-2">
               Talk to an expert
             </a>
           </nav>
@@ -160,40 +157,37 @@ export default function Landing() {
           <div className="shell relative z-10 py-20 lg:py-28">
             <div className="grid gap-16 lg:grid-cols-[1.1fr,1fr] items-center">
               <div>
-                <div className="tag">Procurement operating system</div>
+                <div className="tag">Procurement leadership suite</div>
                 <h1 className="section-title text-slate-900 mt-6">
-                  Procurement that feels orchestrated, not cobbled together.
+                  Procurement Manager gives every purchase a disciplined, executive-ready path.
                 </h1>
                 <p className="section-lead mt-5 text-slate-600">
-                  ProcurementsElite unifies intake, policy, approvals, and supplier management so every purchase is fast,
-                  compliant, and insight-rich.
+                  Procurement Manager unifies intake, policy, approvals, and supplier partnerships into one coherent
+                  command center so decisions are confident, auditable, and swift.
                 </p>
                 <ul className="mt-6 space-y-3 text-base text-slate-700">
                   <li className="flex items-start gap-3">
                     <span className="checkmark">✓</span>
-                    <span>Dynamic playbooks that adapt to spend thresholds, risk profiles, and business rules.</span>
+                    <span>Expert-designed playbooks that adjust to spend thresholds, regulatory nuance, and business rules.</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="checkmark">✓</span>
-                    <span>Shared workspaces for Finance, IT, and Legal with full history and accountability.</span>
+                    <span>Shared workspaces for Finance, IT, Legal, and Security with complete history and accountability.</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="checkmark">✓</span>
-                    <span>Real-time visibility into budgets, renewals, and vendor health for executives.</span>
+                    <span>Live visibility into budgets, renewals, and supplier health for executive steering committees.</span>
                   </li>
                 </ul>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <a
-                    href="#contact"
-                    className="rounded-full bg-blue-600 text-white px-6 py-3 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition"
-                  >
-                    Request a strategy session
+                  <a href="#contact" className="btn-accent px-6 py-3">
+                    Schedule a strategy session
                   </a>
                   <a
                     href="#features"
                     className="rounded-full border border-slate-300 px-6 py-3 text-slate-700 hover:border-slate-400 hover:text-slate-900 transition"
                   >
-                    Explore the platform
+                    Explore our approach
                   </a>
                 </div>
                 <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -286,7 +280,7 @@ export default function Landing() {
           <div className="shell relative z-10">
             <SectionHeading
               title="Everything you need to orchestrate procurement"
-              lead="From intake to renewals, ProcurementsElite is designed to be the control tower your organization relies on."
+              lead="From intake to renewals, Procurement Manager is the control tower your organization relies on."
               tone="light"
               align="center"
             />
@@ -325,7 +319,7 @@ export default function Landing() {
         <section className="section bg-slate-100/60">
           <div className="shell">
             <SectionHeading
-              title="Leaders choose ProcurementsElite to scale with confidence"
+              title="Leaders choose Procurement Manager to scale with confidence"
               lead="See how high-growth companies modernized procurement operations without sacrificing governance."
               align="center"
             />
@@ -337,16 +331,16 @@ export default function Landing() {
           </div>
         </section>
 
-        <section id="pricing" className="section">
+        <section id="engagements" className="section">
           <div className="shell">
             <SectionHeading
-              title="Simple plans that grow with your organization"
-              lead="Start with the essentials, then unlock advanced automation and controls as your procurement muscle matures."
+              title="Engagement models aligned to your ambition"
+              lead="Select the level of partnership that matches where you are—and where you need procurement to go next."
               align="center"
             />
             <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {plans.map((plan) => (
-                <PriceCard key={plan.name} {...plan} />
+              {engagements.map((engagement) => (
+                <EngagementCard key={engagement.name} {...engagement} />
               ))}
             </div>
           </div>
@@ -358,7 +352,7 @@ export default function Landing() {
               <div className="inside p-8 md:p-10">
                 <SectionHeading
                   title="Tell us about your procurement goals"
-                  lead="Partner with our team to tailor ProcurementsElite to your processes, systems, and stakeholders."
+                  lead="Partner with our team to tailor Procurement Manager to your processes, systems, and stakeholders."
                 />
 
                 <form
@@ -384,11 +378,11 @@ export default function Landing() {
                     placeholder="What would you like to improve?"
                   />
                   <div className="md:col-span-2 flex flex-wrap items-center gap-4">
-                    <button className="rounded-full bg-blue-600 text-white px-6 py-3 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition">
+                    <button className="btn-accent px-6 py-3">
                       Send message
                     </button>
                     <p className="text-sm text-slate-500">
-                      We respond within one business day. Prefer email? <a href="mailto:hello@procurementselite.com" className="link">hello@procurementselite.com</a>
+                      We respond within one business day. Prefer email? <a href="mailto:hello@procurementmanager.com" className="link">hello@procurementmanager.com</a>
                     </p>
                   </div>
                 </form>
@@ -400,16 +394,14 @@ export default function Landing() {
         <section className="py-16">
           <div className="shell text-center">
             <div className="tag tag--soft">Next step</div>
-            <h2 className="section-title mt-4 text-slate-900">Ready to give your procurement team superpowers?</h2>
-            <p className="section-lead mt-4 text-slate-600">
-              Let’s design an intake-to-renewal experience your stakeholders will love.
-            </p>
+            <h2 className="section-title mt-4 text-slate-900">Ready to elevate procurement leadership?</h2>
+            <p className="section-lead mt-4 text-slate-600">Let’s architect an intake-to-renewal journey your stakeholders can trust.</p>
             <div className="mt-8 flex flex-wrap gap-3 justify-center">
               <a
                 href="#contact"
                 className="rounded-full bg-slate-900 text-white px-6 py-3 shadow-lg shadow-slate-900/30 hover:bg-slate-800 transition"
               >
-                Book a conversation
+                Book a consultation
               </a>
               <a href="#features" className="rounded-full border border-slate-300 px-6 py-3 hover:border-slate-400 transition">
                 Download the brief
@@ -421,7 +413,7 @@ export default function Landing() {
 
       <footer className="border-t border-slate-200/80 bg-white/70 backdrop-blur">
         <div className="shell py-6 text-xs text-slate-500 flex flex-col md:flex-row items-center justify-between gap-2">
-          <span>© {new Date().getFullYear()} ProcurementsElite. Crafted for strategic procurement teams.</span>
+          <span>© {new Date().getFullYear()} Procurement Manager. Crafted for strategic procurement teams.</span>
           <span className="flex gap-4">
             <a href="/privacy" className="hover:underline">
               Privacy
@@ -474,7 +466,9 @@ function SolutionCard({ title, body }) {
 function FeatureTile({ icon, title, copy }) {
   return (
     <div className="feature-tile">
-      <div className="feature-icon">{icon}</div>
+      <div className="feature-icon" aria-hidden="true">
+        {icon}
+      </div>
       <h3 className="text-lg font-semibold text-white">{title}</h3>
       <p className="text-slate-200/80 leading-relaxed">{copy}</p>
     </div>
@@ -505,12 +499,12 @@ function Testimonial({ name, role, quote }) {
   );
 }
 
-function PriceCard({ name, price, blurb, items, highlight }) {
+function EngagementCard({ name, investment, blurb, items, highlight }) {
   return (
     <div className={`price-card ${highlight ? "price-card--highlight" : ""}`}>
       <div className="price-card-header">
         <span className="price-name">{name}</span>
-        <span className="price-value">{price}</span>
+        <span className="price-value">{investment}</span>
         <p className="price-blurb">{blurb}</p>
       </div>
       <ul className="price-list">
@@ -519,7 +513,7 @@ function PriceCard({ name, price, blurb, items, highlight }) {
         ))}
       </ul>
       <a href="#contact" className="price-cta">
-        Talk to sales
+        Schedule consultation
       </a>
     </div>
   );
