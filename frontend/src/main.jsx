@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 
 import Landing from "./pages/Landing";
-import App from "./App";                // app shell (sidebar etc.)
+import App from "./App";
 import Dashboard from "./pages/Dashboard";
 import Requests from "./pages/Requests";
 import Approvals from "./pages/Approvals";
@@ -28,8 +28,8 @@ const router = createBrowserRouter([
       { path: "requests", element: <Requests /> },
       { path: "requests/:id", element: <RequestDetailRoute /> },
       { path: "approvals", element: <Approvals /> },
-      { path: "settings", element: <Settings /> },
       { path: "vendors", element: <Vendors /> },
+      { path: "settings", element: <Settings /> },
       { path: "*", element: <div className="text-center text-gray-600 p-6">Not Found</div> }
     ],
   },

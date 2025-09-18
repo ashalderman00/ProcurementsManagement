@@ -14,10 +14,10 @@ export default function App() {
         <div className="px-5 py-4 font-bold tracking-wide border-b border-slate-100">🛒 Procurement</div>
         <nav className="p-3 space-y-1">
           <Nav to="/" icon={<LayoutGrid size={16}/>}>Dashboard</Nav>
-          <Nav to="/requests" icon={<ShoppingCart size={16}/>}>Requests</Nav>
-          <Nav to="/approvals" icon={<CheckSquare size={16}/>}>Approvals</Nav>
-          <Nav to="/settings" icon={<Cog size={16}/>}>Settings</Nav>
-          <Nav to="/vendors" icon={<ShoppingCart size={16}/>}>Vendors</Nav>
+          <Nav to="/app/requests" icon={<ShoppingCart size={16}/>}>Requests</Nav>
+          <Nav to="/app/approvals" icon={<CheckSquare size={16}/>}>Approvals</Nav>
+          <Nav to="/app/settings" icon={<Cog size={16}/>}>Settings</Nav>
+          <Nav to="/app/vendors" icon={<ShoppingCart size={16}/>}>Vendors</Nav>
         </nav>
         <div className="mt-auto p-3 border-t border-slate-100 space-y-2">
           {user ? (
