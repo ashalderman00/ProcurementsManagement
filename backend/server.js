@@ -14,8 +14,7 @@ const {
 } = require('./workflow');
 
 const app = express();
-const extendExtraRoutes = require('./routes.extras');
-const extendRoutes = require('./routes.extras');
+const extraRoutes = require('./routes.extras');
 app.use(cors());
 app.use(express.json());
 
@@ -593,11 +592,12 @@ app.get('/api/requests/:id/files', authRequired, async (req, res) => {
   res.json(rows);
 });
 
-extendRoutes(app, pool, authRequired, roleRequired);
-if (extendExtraRoutes.extendComments)
-  extendExtraRoutes.extendComments(app, pool, authRequired);
-if (typeof extendRoutes === 'function')
-  extendRoutes(app, pool, authRequired, roleRequired);
+if (typeof extraRoutes === 'function')
+  extraRoutes(app, pool, authRequired, roleRequired);
+else if (extraRoutes && typeof extraRoutes.extend === 'function')
+  extraRoutes.extend(app, pool, authRequired, roleRequired);
+if (extraRoutes && typeof extraRoutes.extendComments === 'function')
+  extraRoutes.extendComments(app, pool, authRequired);
 app.listen(PORT, () =>
   console.log(`Backend listening on http://localhost:${PORT}`)
 );
