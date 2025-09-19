@@ -109,8 +109,9 @@ const quickGuides = [
   {
     title: 'Intake checklist',
     description:
-      'Share with requesters so every submission arrives complete the first time.',
-    action: 'Download checklist',
+      'Interactive readiness checklist covering budget, risk, and rollout details to collect before intake.',
+    action: 'Open checklist',
+    href: '/resources/intake-checklist',
   },
   {
     title: 'Renewal preparation',
@@ -141,6 +142,17 @@ const accessSteps = [
       'Before managing intake, review the quick orientation so you understand routing, approvals, and renewals.',
     meta: '20 minutes',
     action: { label: 'Start orientation', href: '#resources', tone: 'link' },
+  },
+  {
+    title: 'Review intake checklist',
+    description:
+      'Align requesters on the budget, risk, and rollout details Procurement expects before they submit.',
+    meta: 'Shared resource',
+    action: {
+      label: 'Open checklist',
+      href: '/resources/intake-checklist',
+      tone: 'link',
+    },
   },
 ];
 
@@ -492,9 +504,15 @@ export default function Landing() {
                 <article className="guide-card" key={guide.title}>
                   <h3>{guide.title}</h3>
                   <p>{guide.description}</p>
-                  <button type="button" className="text-button">
-                    {guide.action}
-                  </button>
+                  {guide.href ? (
+                    <a className="text-button" href={guide.href}>
+                      {guide.action}
+                    </a>
+                  ) : (
+                    <button type="button" className="text-button">
+                      {guide.action}
+                    </button>
+                  )}
                 </article>
               ))}
             </div>
@@ -512,7 +530,9 @@ export default function Landing() {
               <h2 id="access-heading">Get into Procurement Manager</h2>
               <p>
                 A short checklist for teammates joining the workspace. Share
-                this page instead of a long orientation deck.
+                this page instead of a long orientation deck, and use the
+                intake readiness checklist to set expectations for
+                requesters.
               </p>
             </div>
             <div className="access-grid">
