@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { apiGet, apiPost, apiUpload } from "../lib/api";
 import { Card, CardBody, CardHeader } from "../components/Card";
@@ -9,12 +9,16 @@ import Drawer from "../components/Drawer";
 import FAB from "../components/FAB";
 import Chip from "../components/Chip";
 import { useToast } from "../components/toast";
+import { useAuth } from "../lib/auth";
 
 export default function Requests() {
   const toast = useToast();
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [cats, setCats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [approvalStages, setApprovalStages] = useState({});
+  const [pendingActionId, setPendingActionId] = useState(null);
 
   // filters
   const [q, setQ] = useState("");
@@ -28,11 +32,65 @@ export default function Requests() {
   const [categoryId, setCategoryId] = useState("");
   const [file, setFile] = useState(null);
 
+  const userRole = user?.role || "";
+
+  const fetchApprovalsFor = useCallback(
+    async (requests, { replace = false } = {}) => {
+      if (!Array.isArray(requests)) return;
+      if (!requests.length) {
+        if (replace) setApprovalStages({});
+        return;
+      }
+
+      setApprovalStages((prev) => {
+        if (replace) {
+          const next = {};
+          for (const req of requests) next[req.id] = undefined;
+          return next;
+        }
+        const next = { ...prev };
+        for (const req of requests) {
+          if (!(req.id in next)) next[req.id] = undefined;
+        }
+        return next;
+      });
+
+      const results = await Promise.all(
+        requests.map(async (req) => {
+          try {
+            const stages = await apiGet(`/api/requests/${req.id}/approvals`);
+            return [req.id, stages];
+          } catch (err) {
+            console.error(`Failed to load approvals for request ${req.id}`, err);
+            return [req.id, null];
+          }
+        })
+      );
+
+      setApprovalStages((prev) => {
+        const next = replace ? {} : { ...prev };
+        for (const [id, stages] of results) next[id] = stages;
+        return next;
+      });
+    },
+    []
+  );
+
+  const pendingStageFor = useCallback(
+    (requestId) => {
+      const entry = approvalStages[requestId];
+      if (!Array.isArray(entry)) return null;
+      return entry.find((stage) => stage.status === "pending") || null;
+    },
+    [approvalStages]
+  );
+
   async function load() {
     setLoading(true);
     try {
       const [data, c] = await Promise.all([apiGet("/api/requests"), apiGet("/api/categories")]);
       setItems(data); setCats(c);
+      await fetchApprovalsFor(data, { replace: true });
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, []);
@@ -56,7 +114,8 @@ export default function Requests() {
         title, amount: Number(amount), category_id: categoryId ? Number(categoryId) : null
       });
       if (file) await apiUpload("/api/requests/"+created.id+"/files", file);
-      setItems([created, ...items]);
+      setItems(prev => [created, ...prev]);
+      await fetchApprovalsFor([created]);
       setTitle(""); setAmount(""); setCategoryId(""); setFile(null); setOpen(false);
       toast.success("Request created");
     } catch { toast.error("Create failed"); }
@@ -66,13 +125,16 @@ export default function Requests() {
     try {
       if (next !== "approved" && next !== "denied") throw new Error("Unsupported status");
       const action = next === "approved" ? "approve" : "deny";
+      setPendingActionId(id);
       await apiPost(`/api/requests/${id}/${action}`, {});
-      setItems(await apiGet("/api/requests"));
+      const updated = await apiGet("/api/requests");
+      setItems(updated);
+      await fetchApprovalsFor(updated, { replace: true });
       toast.success(next === "approved" ? "Approval recorded" : "Denial recorded");
     } catch (err) {
       console.error(err);
-      toast.error("Update failed");
-    }
+      toast.error(friendlyApiError(err));
+    } finally { setPendingActionId(null); }
   }
 
   return (
@@ -114,20 +176,56 @@ export default function Requests() {
                     <Td className="text-slate-300">████</Td>
                   </tr>
                 ))}
-                {!loading && filtered.map(i => (
-                  <tr key={i.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
-                    <Td><Link className="text-blue-700 underline" to={`/app/requests/${i.id}`}>{i.title}</Link></Td>
-                    <Td align="right">${Number(i.amount).toFixed(2)}</Td>
-                    <Td align="center">{i.category_name || "—"}</Td>
-                    <Td align="center"><Badge status={i.status} /></Td>
-                    <Td>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" onClick={()=>setStage(i.id,'approved')}>Approve</Button>
-                        <Button variant="ghost" onClick={()=>setStage(i.id,'denied')}>Deny</Button>
-                      </div>
-                    </Td>
-                  </tr>
-                ))}
+                {!loading && filtered.map(i => {
+                  const stageEntry = approvalStages[i.id];
+                  const pendingStage = pendingStageFor(i.id);
+                  const canAct = canActOnStage({
+                    request: i,
+                    pendingStage,
+                    userRole,
+                  });
+                  const message = renderStageMessage({
+                    request: i,
+                    stageEntry,
+                    pendingStage,
+                    userRole,
+                  });
+                  return (
+                    <tr key={i.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
+                      <Td><Link className="text-blue-700 underline" to={`/app/requests/${i.id}`}>{i.title}</Link></Td>
+                      <Td align="right">${Number(i.amount).toFixed(2)}</Td>
+                      <Td align="center">{i.category_name || "—"}</Td>
+                      <Td align="center"><Badge status={i.status} /></Td>
+                      <Td>
+                        {i.status !== "pending" ? (
+                          <span className="text-xs text-slate-500">No actions</span>
+                        ) : (
+                          <div className="space-y-1">
+                            <div className="flex gap-2">
+                              <Button
+                                variant="ghost"
+                                onClick={()=>setStage(i.id,'approved')}
+                                disabled={
+                                  pendingActionId === i.id ||
+                                  !canAct
+                                }
+                              >Approve</Button>
+                              <Button
+                                variant="ghost"
+                                onClick={()=>setStage(i.id,'denied')}
+                                disabled={
+                                  pendingActionId === i.id ||
+                                  !canAct
+                                }
+                              >Deny</Button>
+                            </div>
+                            {message}
+                          </div>
+                        )}
+                      </Td>
+                    </tr>
+                  );
+                })}
                 {!loading && !filtered.length && (
                   <tr><Td colSpan="5" className="text-slate-500">No matching requests — try clearing filters or create the first one.</Td></tr>
                 )}
@@ -170,4 +268,87 @@ export default function Requests() {
       <Outlet />
     </div>
   );
+}
+
+function canActOnStage({ request, pendingStage, userRole }) {
+  if (!request || request.status !== "pending") return false;
+  if (!userRole) return false;
+  if (userRole === "admin") return true;
+  if (!pendingStage || !pendingStage.role_required) return false;
+  return pendingStage.role_required === userRole;
+}
+
+function renderStageMessage({ request, stageEntry, pendingStage, userRole }) {
+  if (!request || request.status !== "pending") return null;
+  const base = "text-xs text-slate-500";
+
+  if (stageEntry === null) {
+    return <div className={base}>Approval routing unavailable.</div>;
+  }
+  if (typeof stageEntry === "undefined") {
+    return <div className={base}>Loading approval routing…</div>;
+  }
+  if (!pendingStage) {
+    return <div className={base}>No pending stage.</div>;
+  }
+  if (!userRole) {
+    return <div className={base}>Checking permissions…</div>;
+  }
+  if (userRole === "admin") {
+    const roleLabel = formatRole(pendingStage.role_required);
+    return (
+      <div className={base}>
+        Admin override available for {roleLabel ? `${roleLabel} stage` : "this stage"}.
+      </div>
+    );
+  }
+  if (pendingStage.role_required && pendingStage.role_required !== userRole) {
+    const roleLabel = formatRole(pendingStage.role_required);
+    return <div className={base}>Waiting on {roleLabel || "another role"}</div>;
+  }
+  const roleLabel = formatRole(pendingStage.role_required || userRole);
+  return (
+    <div className={base}>
+      {roleLabel ? `You're assigned as ${roleLabel}.` : "You can act on this stage."}
+    </div>
+  );
+}
+
+function formatRole(role) {
+  if (!role) return "";
+  return role
+    .toString()
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function parseApiError(err) {
+  const message = typeof err === "string" ? err : err?.message || "";
+  if (!message) return null;
+  const parts = message.split("::");
+  if (parts.length > 1) {
+    const jsonPart = parts[parts.length - 1].trim();
+    try {
+      const parsed = JSON.parse(jsonPart);
+      if (parsed && typeof parsed.error === "string") return parsed.error;
+    } catch (_) {
+      /* ignore parse errors */
+    }
+  }
+  if (message.includes(" 403 ")) return "Not authorized for this stage";
+  if (message.includes(" 400 ")) return "No pending stage";
+  if (message.toLowerCase().includes("failed to fetch")) return "Network error";
+  return null;
+}
+
+function friendlyApiError(err) {
+  const raw = parseApiError(err);
+  if (raw === "wrong role for this stage" || raw === "Not authorized for this stage")
+    return "This request is waiting on another role.";
+  if (raw === "No pending stage" || raw === "no pending stage")
+    return "No pending stage to act on.";
+  if (raw) return raw;
+  return "Update failed";
 }
