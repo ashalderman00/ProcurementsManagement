@@ -4,10 +4,30 @@ import AuthLayout from "../components/AuthLayout";
 import { apiPost } from "../lib/api";
 
 const inputClass =
-  "w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20";
+  "w-full rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-200/50";
 const labelClass = "text-sm font-medium text-slate-600";
-const buttonClass =
-  "w-full rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-600 py-3 text-sm font-medium text-white shadow-lg shadow-blue-500/30 transition hover:from-blue-600 hover:to-indigo-600 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-80";
+const buttonClass = [
+  "w-full",
+  "rounded-2xl",
+  "bg-gradient-to-r",
+  "from-blue-600",
+  "via-indigo-500",
+  "to-blue-600",
+  "py-3",
+  "text-sm",
+  "font-semibold",
+  "text-white",
+  "shadow-lg",
+  "shadow-blue-500/25",
+  "transition",
+  "hover:from-blue-600",
+  "hover:to-indigo-600",
+  "focus:outline-none",
+  "focus:ring-4",
+  "focus:ring-blue-300/40",
+  "disabled:cursor-not-allowed",
+  "disabled:opacity-80",
+].join(" ");
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -35,7 +55,7 @@ export default function Login() {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Sign in with your work credentials to keep requests, approvals, and vendors moving."
+      subtitle="Sign in with your work credentials to pick up intake, approvals, and vendor reviews right where you left off."
     >
       <>
         {err ? (
@@ -78,6 +98,13 @@ export default function Login() {
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
+        <div className="space-y-3 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-4 text-sm text-slate-600">
+          <p className="font-medium text-slate-700">Need a hand?</p>
+          <ul className="list-disc space-y-1 pl-4">
+            <li>Admins can invite finance, approver, buyer, and requester teammates from Workspace Settings.</li>
+            <li>If you forgot your password, reach out to your workspace admin to trigger a reset.</li>
+          </ul>
+        </div>
         <p className="text-center text-sm text-slate-500">
           New to Procurement Manager?{" "}
           <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-700">

@@ -4,17 +4,53 @@ import AuthLayout from "../components/AuthLayout";
 import { apiPost } from "../lib/api";
 
 const inputClass =
-  "w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20";
+  "w-full rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-200/50";
 const labelClass = "text-sm font-medium text-slate-600";
-const selectClass =
-  "w-full appearance-none rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20";
-const buttonClass =
-  "w-full rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-600 py-3 text-sm font-medium text-white shadow-lg shadow-blue-500/30 transition hover:from-blue-600 hover:to-indigo-600 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-80";
+const buttonClass = [
+  "w-full",
+  "rounded-2xl",
+  "bg-gradient-to-r",
+  "from-blue-600",
+  "via-indigo-500",
+  "to-blue-600",
+  "py-3",
+  "text-sm",
+  "font-semibold",
+  "text-white",
+  "shadow-lg",
+  "shadow-blue-500/25",
+  "transition",
+  "hover:from-blue-600",
+  "hover:to-indigo-600",
+  "focus:outline-none",
+  "focus:ring-4",
+  "focus:ring-blue-300/40",
+  "disabled:cursor-not-allowed",
+  "disabled:opacity-80",
+].join(" ");
+
+const workspaceRoles = [
+  {
+    title: "Finance",
+    description: "Review intake for budget coverage, manage accruals, and steward approvals tied to spend policy.",
+  },
+  {
+    title: "Approver",
+    description: "Give fast, contextual decisions with a complete brief and clear audit trail of conditions.",
+  },
+  {
+    title: "Buyer",
+    description: "Coordinate sourcing tasks, vendor diligence, and stakeholder updates from one shared record.",
+  },
+  {
+    title: "Requester",
+    description: "Submit guided requests, attach business context, and follow progress without chasing updates.",
+  },
+];
 
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("requester");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -32,7 +68,7 @@ export default function Signup() {
     }
     setLoading(true);
     try {
-      const res = await apiPost("/api/auth/signup", { email, password, role });
+      const res = await apiPost("/api/auth/signup", { email, password, role: "admin" });
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
       navigate("/app", { replace: true });
@@ -49,7 +85,7 @@ export default function Signup() {
   return (
     <AuthLayout
       title="Create your workspace"
-      subtitle="Spin up Procurement Manager for your team in minutes. Invite approvers and start accepting requests right away."
+      subtitle="You're creating the administrator account that will configure Procurement Manager for your organisation."
     >
       <>
         {err ? (
@@ -58,6 +94,12 @@ export default function Signup() {
           </div>
         ) : null}
         <form onSubmit={submit} className="space-y-5">
+          <div className="rounded-2xl border border-blue-200/80 bg-blue-50/80 px-4 py-4 text-sm text-blue-700">
+            <p className="font-medium">This sign-up is for workspace admins.</p>
+            <p className="mt-2 text-blue-800/80">
+              Once inside, you can invite finance, approver, buyer, and requester teammates so they have the right access levels.
+            </p>
+          </div>
           <div className="space-y-1.5">
             <label htmlFor="email" className={labelClass}>
               Work email
@@ -88,28 +130,23 @@ export default function Signup() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="space-y-1.5">
-            <label htmlFor="role" className={labelClass}>
-              Default role
-            </label>
-            <div className="relative">
-              <select
-                id="role"
-                className={`${selectClass} pr-10`}
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
-                <option value="requester">Requester — submit purchase requests</option>
-                <option value="approver">Approver — review and approve spend</option>
-                <option value="admin">Admin — configure policies and vendors</option>
-              </select>
-              <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-400">▾</span>
-            </div>
-          </div>
           <button type="submit" disabled={loading} className={buttonClass}>
             {loading ? "Creating account…" : "Create account"}
           </button>
         </form>
+        <div className="space-y-4 rounded-[28px] border border-slate-200/70 bg-white/70 px-5 py-6 text-sm text-slate-600 shadow-sm">
+          <p className="text-slate-700">
+            After you finish onboarding, use the Roles & Access section to add specialised teammates.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {workspaceRoles.map(({ title, description }) => (
+              <div key={title} className="rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-3">
+                <p className="text-sm font-semibold text-slate-700">{title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-500">{description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
         <p className="text-center text-sm text-slate-500">
           Already using Procurement Manager?{" "}
           <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
