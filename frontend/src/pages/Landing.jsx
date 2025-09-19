@@ -5,7 +5,7 @@ const navLinks = [
   { label: "Operating model", href: "#model" },
   { label: "Role handbook", href: "#roles" },
   { label: "Guides", href: "#guides" },
-  { label: "Support", href: "#support" },
+  { label: "Access", href: "#access" },
 ];
 
 const heroMetrics = [
@@ -51,7 +51,7 @@ const rituals = [
   {
     time: "08:45",
     title: "Daily digest",
-    description: "Operations receives a Slack brief of new intake, blockers, and overnight approvals to triage.",
+    description: "Operations receives a morning brief of new intake, blockers, and overnight approvals to triage.",
   },
   {
     time: "11:00",
@@ -201,21 +201,31 @@ const quickGuides = [
   },
 ];
 
-const supportChannels = [
+const accessSteps = [
   {
-    title: "Procurement operations desk",
-    contact: "operations@procurementmanager.com",
-    note: "Best for policy questions, vendor escalations, and walkthrough requests.",
+    title: "Launch the workspace",
+    description:
+      "Procurement Manager lives at workspace.procurementmanager.com. Sign in with company SSO from any managed device.",
+    meta: "SSO required",
+    action: { label: "Sign in", href: "/login", tone: "primary" },
   },
   {
-    title: "Slack #procurement-manager",
-    contact: "Live channel",
-    note: "Post quick updates, status checks, or tag approvers for same-day responses.",
+    title: "Request workspace access",
+    description:
+      "New collaborators can request access by emailing the admin team with their cost center, manager, and required role.",
+    meta: "Under 1 business day",
+    action: {
+      label: "Email admin team",
+      href: "mailto:admin@procurementmanager.com",
+      tone: "ghost",
+    },
   },
   {
-    title: "Weekly office hours",
-    contact: "Fridays • 11:30am ET",
-    note: "Join to review pipeline, renewals, or automation adjustments with the admin team.",
+    title: "Complete orientation",
+    description:
+      "Before submitting your first request, complete the 20-minute orientation that covers intake, approvals, and vendor dossiers.",
+    meta: "Orientation",
+    action: { label: "Open orientation guide", href: "#guides", tone: "link" },
   },
 ];
 
@@ -238,8 +248,8 @@ export default function Landing() {
               </a>
             ))}
           </nav>
-          <a className="nav-cta" href="#support">
-            Operations desk
+          <a className="nav-cta" href="#access">
+            Sign in
           </a>
         </div>
       </header>
@@ -251,18 +261,18 @@ export default function Landing() {
               <div className="hero-copy">
                 <span className="kicker hero-kicker">Procurement Manager</span>
                 <h1 className="hero-title" id="hero-title">
-                  Procurement infrastructure for operators
+                  The operations surface for procurement teams
                 </h1>
                 <p className="hero-description">
-                  The workspace your team already runs on—structured intake, accountable approvals, and vendor dossiers—presented
-                  with the clarity leadership expects. No marketing spin, just the control center that keeps spend moving.
+                  Procurement Manager keeps intake, approvals, and vendor management in one glassy control center for finance,
+                  legal, security, and operations. It is the internal workspace your teams rely on—not a marketing site.
                 </p>
                 <div className="hero-actions">
-                  <a className="button primary" href="#model">
-                    Review operating model
+                  <a className="button primary" href="#access">
+                    Launch workspace
                   </a>
-                  <a className="button ghost" href="#roles">
-                    Open role handbook
+                  <a className="button ghost" href="#access">
+                    Request access
                   </a>
                 </div>
                 <dl className="hero-metrics">
@@ -324,8 +334,8 @@ export default function Landing() {
                   </div>
                   <div className="notification stack">
                     <div className="notification-header">
-                      <span className="notification-app slack">Slack</span>
-                      <span className="notification-status">Live</span>
+                      <span className="notification-app workspace">Workspace</span>
+                      <span className="notification-status">In review</span>
                     </div>
                     <p className="notification-title">Shannon requested spend</p>
                     <div className="notification-actions">
@@ -334,7 +344,7 @@ export default function Landing() {
                     </div>
                   </div>
                   <div className="integration-chip oracle">Oracle NetSuite</div>
-                  <div className="integration-chip quickbooks">Intuit QuickBooks</div>
+                  <div className="integration-chip workday">Workday</div>
                   <div className="integration-chip okta">Okta SSO</div>
                 </div>
               </aside>
@@ -478,21 +488,38 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="support" id="support" aria-labelledby="support-heading">
+        <section className="access" id="access" aria-labelledby="access-heading">
           <div className="shell">
             <div className="section-heading">
-              <span className="kicker">Support</span>
-              <h2 id="support-heading">Connect with the procurement desk</h2>
+              <span className="kicker">Access & onboarding</span>
+              <h2 id="access-heading">How to get into Procurement Manager</h2>
               <p>
-                Use the channels below for escalations, walkthrough requests, or to keep leadership in the loop.
+                A short primer for teammates who already operate the program—where to sign in, how to request access, and what
+                to review before managing intake.
               </p>
             </div>
-            <div className="support-grid">
-              {supportChannels.map((channel) => (
-                <article className="support-card" key={channel.title}>
-                  <h3>{channel.title}</h3>
-                  <p className="support-contact">{channel.contact}</p>
-                  <p>{channel.note}</p>
+            <div className="access-grid">
+              {accessSteps.map((step) => (
+                <article className="access-card" key={step.title}>
+                  <div className="access-card-header">
+                    <h3>{step.title}</h3>
+                    {step.meta ? <span className="access-meta">{step.meta}</span> : null}
+                  </div>
+                  <p>{step.description}</p>
+                  {step.action ? (
+                    step.action.tone === "link" ? (
+                      <a className="text-button" href={step.action.href}>
+                        {step.action.label}
+                      </a>
+                    ) : (
+                      <a
+                        className={`button ${step.action.tone === "ghost" ? "ghost" : "primary"}`}
+                        href={step.action.href}
+                      >
+                        {step.action.label}
+                      </a>
+                    )
+                  ) : null}
                 </article>
               ))}
             </div>

@@ -498,10 +498,10 @@ section {
   color: #c5d5ff;
 }
 
-.notification-app.slack {
-  background: rgba(84, 220, 204, 0.18);
-  border-color: rgba(84, 220, 204, 0.36);
-  color: #94f5e3;
+.notification-app.workspace {
+  background: rgba(120, 176, 255, 0.2);
+  border-color: rgba(120, 176, 255, 0.38);
+  color: #d2e4ff;
 }
 
 .notification-title {
@@ -551,7 +551,7 @@ section {
   right: 24px;
 }
 
-.integration-chip.quickbooks {
+.integration-chip.workday {
   bottom: 28px;
   left: 26px;
 }
@@ -817,35 +817,60 @@ section {
   color: #8bb3ff;
 }
 
-.support {
-  background: linear-gradient(180deg, rgba(2, 6, 18, 0.85), rgba(3, 9, 22, 0.6));
+.access {
+  background: linear-gradient(180deg, rgba(2, 6, 18, 0.85), rgba(4, 10, 24, 0.6));
 }
 
-.support-grid {
+.access-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.8rem;
 }
 
-.support-card {
-  padding: 2rem;
+.access-card {
+  padding: 2.1rem;
   border-radius: var(--radius-md);
-  background: rgba(8, 15, 32, 0.78);
+  background: rgba(7, 14, 32, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.08);
   display: grid;
-  gap: 0.8rem;
+  gap: 1.3rem;
 }
 
-.support-card h3 {
+.access-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.access-card h3 {
   margin: 0;
 }
 
-.support-contact {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--text-tertiary);
+.access-meta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.access-card p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.access-card .button {
+  width: fit-content;
+}
+
+.access-card .text-button {
+  justify-self: flex-start;
 }
 
 @media (max-width: 1100px) {
