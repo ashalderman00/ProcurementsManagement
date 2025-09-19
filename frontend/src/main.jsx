@@ -12,24 +12,34 @@ import Settings from "./pages/Settings";
 import Vendors from "./pages/Vendors";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import { AuthProvider, RequireAuth } from "./lib/auth";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/app" element={<App />}>
-          <Route index element={<Dashboard />} />
-          <Route path="requests" element={<Requests />}>
-            <Route path=":id" element={<RequestDetailRoute />} />
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/app"
+            element={(
+              <RequireAuth>
+                <App />
+              </RequireAuth>
+            )}
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="requests" element={<Requests />}>
+              <Route path=":id" element={<RequestDetailRoute />} />
+            </Route>
+            <Route path="approvals" element={<Approvals />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="vendors" element={<Vendors />} />
           </Route>
-          <Route path="approvals" element={<Approvals />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="vendors" element={<Vendors />} />
-        </Route>
-      </Routes>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

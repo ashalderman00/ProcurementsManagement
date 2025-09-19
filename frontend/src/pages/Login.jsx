@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import { apiPost } from "../lib/api";
+import { useAuth } from "../lib/auth";
 
 const inputClass =
   "w-full rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-200/50";
@@ -35,6 +36,9 @@ export default function Login() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { setSession } = useAuth();
+  const redirectTo = location.state?.from || "/app";
 
   async function submit(e) {
     e.preventDefault();
@@ -42,9 +46,8 @@ export default function Login() {
     setLoading(true);
     try {
       const { token, user } = await apiPost("/api/auth/login", { email, password });
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      navigate("/app", { replace: true });
+      setSession(token, user);
+      navigate(redirectTo, { replace: true });
     } catch {
       setErr("Invalid email or password. Please try again.");
     } finally {
