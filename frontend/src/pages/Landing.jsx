@@ -2,156 +2,71 @@ import { useState } from "react";
 
 const navLinks = [
   { label: "Overview", href: "#overview" },
-  { label: "Platform", href: "#platform" },
-  { label: "Workflow", href: "#workflow" },
-  { label: "Roles", href: "#roles" },
-  { label: "Playbooks", href: "#playbooks" },
+  { label: "Operating model", href: "#model" },
+  { label: "Role handbook", href: "#roles" },
+  { label: "Guides", href: "#guides" },
+  { label: "Support", href: "#support" },
 ];
 
 const heroMetrics = [
-  { label: "Cycle time reduction", value: "42%" },
-  { label: "Policy adherence", value: "99.2%" },
-  { label: "Savings surfaced", value: "$3.8M" },
+  { label: "Active suppliers", value: "214" },
+  { label: "Avg. cycle time", value: "3.7 days" },
+  { label: "Policy coverage", value: "99.4%" },
 ];
 
-const heroSignals = [
-  "Structured intake collects business case, budget, and risk data automatically.",
-  "Smart approvals orchestrate finance, legal, and security in a single thread.",
-  "Supplier intelligence keeps obligations, renewals, and spend ready for audit.",
-];
-
-const heroPreview = [
+const operatingModel = [
   {
-    name: "Notion annual renewal",
-    meta: "Finance review • due tomorrow",
-    amount: "$48.9K",
-    status: "On track",
-    tone: "positive",
-  },
-  {
-    name: "Google Cloud expansion",
-    meta: "Executive approval • forecast +3%",
-    amount: "$320K",
-    status: "Needs input",
-    tone: "warning",
-  },
-  {
-    name: "Loom growth plan",
-    meta: "Security questionnaire • waiting on vendor",
-    amount: "$18.5K",
-    status: "Blocked",
-    tone: "neutral",
-  },
-];
-
-const trustedLogos = ["Amplitude", "Asana", "Linear", "Figma", "Webflow", "Miro"];
-
-const pillars = [
-  {
-    title: "Universal intake surface",
-    description:
-      "Employees start every purchase in one workspace so procurement sees demand the moment it emerges.",
-    bullets: [
-      "Dynamic forms adapt by vendor, spend type, and urgency.",
-      "Budgets, contracts, and risk requirements pre-fill from your systems.",
-      "Preferred suppliers and negotiated terms appear in-line for faster selections.",
-    ],
-  },
-  {
-    title: "Autonomous approvals",
-    description:
-      "Approvals route automatically based on spend thresholds, policy, and jurisdiction without manual reminders.",
-    bullets: [
-      "Finance, legal, and security collaborate inside the same context thread.",
-      "Delegation logic covers out-of-office scenarios with confidence.",
-      "Stakeholders receive one-click summaries with the data they need to sign off.",
-    ],
-  },
-  {
-    title: "Supplier & renewal command",
-    description:
-      "Procurement Manager maintains a live dossier for every vendor—from performance trends to renewal runway.",
-    bullets: [
-      "Centralized obligations, documents, and points of contact.",
-      "Renewal heatmaps highlight savings opportunities ahead of negotiations.",
-      "Audit-ready trails for contracts, approvals, and risk artifacts.",
-    ],
-  },
-];
-
-const platformHighlights = [
-  {
-    label: "Finance in the flow",
-    title: "Source-to-pay connected to ERP",
-    description:
-      "Actuals, commitments, and amortization sync bi-directionally so finance sees the true picture of spend.",
+    title: "Intake & triage",
+    summary:
+      "Every request lands in one surface with business context, budget, and risk posture captured at the start.",
     points: [
-      "Integrations with ERP, HRIS, and collaboration suites stay in lockstep.",
-      "Budget owners get instant context on variances and forecast impact.",
+      "Adaptive forms collect what finance, legal, and IT require.",
+      "Requestors see preferred suppliers and negotiated terms up front.",
+      "Ownership, spend type, and urgency tags are auto-classified for routing.",
     ],
   },
   {
-    label: "Collaboration built-in",
-    title: "Legal and security review without the chase",
-    description:
-      "Bring legal, IT, and risk teams into the same surface to comment, attach documents, and certify requirements.",
+    title: "Approvals & collaboration",
+    summary:
+      "Policy-based routing keeps finance, legal, security, and executives aligned without side threads.",
     points: [
-      "Version-controlled contract workspace with clause libraries.",
-      "Security and compliance questionnaires tracked alongside requests.",
+      "Sequenced approvals mirror your delegation of authority.",
+      "Context packs summarise variance, contract status, and risk in plain view.",
+      "Comments, redlines, and decisions are preserved in the request dossier.",
     ],
   },
   {
-    label: "Policy instrumentation",
-    title: "Governance that scales with growth",
-    description:
-      "Guardrails turn policy into code so every intake follows approved pathways.",
+    title: "Vendor desk & renewals",
+    summary:
+      "Procurement Manager maintains the live vendor record: obligations, health signals, and renewal runway.",
     points: [
-      "Thresholds adjust by business unit, geography, and currency.",
-      "Exception handling captures rationale and escalations automatically.",
+      "Critical documents and owners are versioned within each supplier profile.",
+      "Renewal windows raise playbooks for savings and stakeholder prep.",
+      "Performance, spend, and risk metrics stay ready for audit.",
     ],
   },
 ];
 
-const workflow = [
+const rituals = [
   {
-    id: "01",
-    title: "Intake & discovery",
-    description:
-      "Guided forms capture context, business impact, and required documentation while surfacing the right suppliers.",
-    bullets: [
-      "Pre-built templates for software, services, and hardware purchases.",
-      "Automated diligence triggers for security, privacy, and compliance.",
-    ],
+    time: "08:45",
+    title: "Daily digest",
+    description: "Operations receives a Slack brief of new intake, blockers, and overnight approvals to triage.",
   },
   {
-    id: "02",
-    title: "Approvals & negotiation",
-    description:
-      "Sequential approvals kick off with finance, legal, and executive reviewers receiving the same, live dossier.",
-    bullets: [
-      "Negotiation notes and benchmark data stay visible to every stakeholder.",
-      "SLA timers keep cycle times accountable across teams.",
-    ],
+    time: "11:00",
+    title: "Stakeholder sync",
+    description: "Finance, legal, and IT review escalations directly inside the shared request workspace.",
   },
   {
-    id: "03",
-    title: "Supplier onboarding",
-    description:
-      "Vendor setup flows, contract storage, and risk attestations are automated and auditable.",
-    bullets: [
-      "Collect banking, tax, and insurance documentation in one motion.",
-      "Track implementation tasks and owners with real-time status.",
-    ],
+    time: "15:30",
+    title: "Renewal sweep",
+    description: "Procurement checks the renewal radar for 30/60/90-day notices and assigns prep owners.",
   },
   {
-    id: "04",
-    title: "Renewal intelligence",
-    description:
-      "Procurement Manager surfaces renewals, consumption data, and savings playbooks ahead of every milestone.",
-    bullets: [
-      "Collaborative renewal briefs alert budget owners at 120/90/60-day windows.",
-      "Spend benchmarks and utilization analytics guide negotiations.",
-    ],
+    time: "Friday",
+    title: "Program review",
+    description: "Admins publish metrics, exceptions, and automation updates to leadership and the teams they support.",
   },
 ];
 
@@ -159,150 +74,148 @@ const roleViews = [
   {
     id: "admin",
     label: "Admin",
-    headline: "Keep the control plane clean",
+    headline: "Keep automations and access healthy",
     summary:
-      "Admins orchestrate automations, integrations, and access so the procurement program runs flawlessly.",
-    priorities: [
-      "Monitor automation health to ensure every intake and approval flow stays green.",
-      "Publish weekly release notes so stakeholders understand policy or workflow updates.",
-      "Audit ERP, HRIS, and SSO connections for sync accuracy.",
+      "Admins govern configurations, integrations, and permissions so every team sees a consistent procurement surface.",
+    responsibilities: [
+      "Monitor automation runs and resolve any intake or approval failures.",
+      "Audit ERP, HRIS, and SSO connections each week for sync accuracy.",
+      "Document configuration changes and notify stakeholders of updates.",
     ],
-    toolkit: [
-      {
-        label: "Automation monitor",
-        description: "Exception alerts, run history, and rollback controls in one dashboard.",
-      },
-      {
-        label: "Configuration register",
-        description: "Trace changes across intake forms, approval rules, and routing assignments.",
-      },
-      {
-        label: "Access reviews",
-        description: "Provisioning snapshots and attestation status for auditors.",
-      },
+    cadence: [
+      "Daily: check the operations dashboard for warnings.",
+      "Weekly: refresh playbooks and templates with policy adjustments.",
+      "Quarterly: review access and archiving with security.",
+    ],
+    tools: [
+      "Automation monitor",
+      "Configuration register",
+      "Access review workspace",
     ],
   },
   {
     id: "finance",
     label: "Finance",
-    headline: "Steer spend with total visibility",
+    headline: "Steer spend with live visibility",
     summary:
-      "Finance partners see real-time commitments, approvals, and forecast impact without waiting for spreadsheets.",
-    priorities: [
-      "Validate budget coverage before approvals hit the month-end freeze.",
-      "Surface variance risks to budget owners with supporting context.",
-      "Model savings scenarios from renewal and sourcing playbooks.",
+      "Finance partners confirm budget coverage, forecast impact, and vendor obligations before approvals advance.",
+    responsibilities: [
+      "Validate cost center and GL coding on new intake before month-end.",
+      "Highlight variance risks and collaborate with budget owners on mitigation.",
+      "Track committed spend against forecast using the live commitments view.",
     ],
-    toolkit: [
-      {
-        label: "Live commitments view",
-        description: "Actuals, accruals, and pipeline aligned to cost centers and projects.",
-      },
-      {
-        label: "Approval console",
-        description: "Finance thresholds and policies embedded into every request.",
-      },
-      {
-        label: "Savings analyzer",
-        description: "Benchmark data and utilization insight ready for negotiation prep.",
-      },
+    cadence: [
+      "Daily: clear approvals that meet policy and funding guardrails.",
+      "Weekly: reconcile commitments and accruals with accounting.",
+      "Monthly: review renewal savings opportunities with procurement.",
+    ],
+    tools: [
+      "Commitments ledger",
+      "Approval console",
+      "Variance brief",
     ],
   },
   {
     id: "buyer",
     label: "Buyer",
-    headline: "Run sourcing like a pro team",
+    headline: "Advance sourcing with structured collaboration",
     summary:
-      "Buyers collaborate with stakeholders and vendors using structured milestones and documentation.",
-    priorities: [
-      "Advance sourcing events with transparent status for business partners.",
-      "Coordinate diligence and contract reviews with clear owners and due dates.",
-      "Capture supplier performance data for quarterly reviews.",
+      "Buyers manage vendor evaluations, diligence, and negotiations with transparent milestones for stakeholders.",
+    responsibilities: [
+      "Keep sourcing workrooms updated with timeline, owners, and decisions.",
+      "Coordinate legal and security deliverables directly within the request.",
+      "Record supplier performance data for quarterly business reviews.",
     ],
-    toolkit: [
-      {
-        label: "Sourcing workrooms",
-        description: "Milestones, scorecards, and negotiation history in one place.",
-      },
-      {
-        label: "Supplier directory",
-        description: "Performance trends, contacts, and obligations for every vendor.",
-      },
-      {
-        label: "Document vault",
-        description: "Statements of work, MSAs, and redlines with full version control.",
-      },
+    cadence: [
+      "Daily: update request status and outstanding supplier actions.",
+      "Weekly: sync with finance on negotiation leverage and savings.",
+      "Quarterly: refresh preferred vendor recommendations.",
+    ],
+    tools: [
+      "Sourcing workroom",
+      "Supplier directory",
+      "Document vault",
     ],
   },
   {
     id: "approver",
     label: "Approver",
-    headline: "Decide with confidence",
+    headline: "Decide quickly with complete context",
     summary:
-      "Approvers receive concise context—budget, risk, contract status—so they can act quickly and defensibly.",
-    priorities: [
-      "Clear approvals by priority with variance and compliance indicators surfaced.",
-      "Record conditions, questions, and follow-ups directly in the approval trail.",
-      "Ensure delegation coverage during travel or quarter-end crunches.",
+      "Approvers receive concise briefs—budget, risk, legal status—so they can decide confidently without back-and-forth.",
+    responsibilities: [
+      "Review the approval brief and flag follow-ups directly in the thread.",
+      "Ensure delegation coverage during travel or quarter-end windows.",
+      "Log conditions or caveats so procurement can operationalise them.",
     ],
-    toolkit: [
-      {
-        label: "Approval brief",
-        description: "Single-page summary with financials, stakeholders, and outstanding tasks.",
-      },
-      {
-        label: "Policy library",
-        description: "Search guardrails by spend type, geography, and threshold.",
-      },
-      {
-        label: "Delegation planner",
-        description: "Assign coverage and monitor SLA adherence across teams.",
-      },
+    cadence: [
+      "Daily: clear pending approvals grouped by priority.",
+      "Weekly: align with procurement on escalations or policy updates.",
+      "Quarterly: refresh delegation rules and decision matrices.",
+    ],
+    tools: [
+      "Approval brief",
+      "Policy library",
+      "Delegation planner",
     ],
   },
   {
     id: "requester",
     label: "Requester",
-    headline: "Start and track work effortlessly",
+    headline: "Submit and track work with clarity",
     summary:
-      "Employees initiate purchases with clarity on requirements, progress, and partners.",
-    priorities: [
-      "Submit complete requests with business context and supporting documentation.",
-      "Respond quickly to clarifications from procurement or security.",
-      "Plan renewals early with reminders and budget alignment.",
+      "Requesters provide the business case, collaborate on follow-ups, and monitor progress without leaving the workspace.",
+    responsibilities: [
+      "Complete guided intake with supporting documentation and stakeholders.",
+      "Respond promptly to clarification requests from procurement or security.",
+      "Plan renewals early with reminders and budget coordination.",
     ],
-    toolkit: [
-      {
-        label: "Guided request",
-        description: "Step-by-step intake that highlights preferred vendors and policy cues.",
-      },
-      {
-        label: "Tracking board",
-        description: "Real-time status, comments, and deliverables shared with stakeholders.",
-      },
-      {
-        label: "Renewal planner",
-        description: "Timeline of upcoming renewals with owners and prep tasks.",
-      },
+    cadence: [
+      "As needed: start intake before contracts expire or spend occurs.",
+      "During review: stay available in the request thread for context.",
+      "Post approval: confirm delivery and record supplier feedback.",
+    ],
+    tools: [
+      "Guided request",
+      "Tracking board",
+      "Renewal planner",
     ],
   },
 ];
 
-const playbooks = [
+const quickGuides = [
   {
-    title: "Procurement operating guide",
-    description: "A 30-60-90 plan to stand up Procurement Manager and align stakeholders.",
-    action: "Open guide",
+    title: "Procurement Manager orientation",
+    description: "Short walkthrough of the workspace layout, intake, and approvals for new teammates.",
+    action: "Open the overview",
   },
   {
-    title: "Month-end close ritual",
-    description: "Checklist for reconciling commitments, approvals, and accruals every month.",
-    action: "Review checklist",
+    title: "Intake quality checklist",
+    description: "Checklist requesters can follow to ensure finance, legal, and IT have what they need on day one.",
+    action: "Download checklist",
   },
   {
-    title: "Renewal preparation kit",
-    description: "Templates to brief budget owners and capture vendor performance ahead of negotiations.",
-    action: "Download kit",
+    title: "Quarterly renewal planning",
+    description: "Template to coordinate renewal prep, benchmarks, and negotiation notes across teams.",
+    action: "Review the template",
+  },
+];
+
+const supportChannels = [
+  {
+    title: "Procurement operations desk",
+    contact: "operations@procurementmanager.com",
+    note: "Best for policy questions, vendor escalations, and walkthrough requests.",
+  },
+  {
+    title: "Slack #procurement-manager",
+    contact: "Live channel",
+    note: "Post quick updates, status checks, or tag approvers for same-day responses.",
+  },
+  {
+    title: "Weekly office hours",
+    contact: "Fridays • 11:30am ET",
+    note: "Join to review pipeline, renewals, or automation adjustments with the admin team.",
   },
 ];
 
@@ -315,6 +228,7 @@ export default function Landing() {
       <header className="site-header" id="top">
         <div className="shell nav-shell">
           <a className="brand" href="#top">
+            <span className="brand-mark" aria-hidden="true" />
             <span>Procurement Manager</span>
           </a>
           <nav className="nav-links" aria-label="Primary">
@@ -324,134 +238,125 @@ export default function Landing() {
               </a>
             ))}
           </nav>
-          <a className="nav-cta" href="#contact">
-            Speak with procurement
+          <a className="nav-cta" href="#support">
+            Operations desk
           </a>
         </div>
       </header>
 
       <main>
-        <section className="hero" aria-labelledby="hero-title">
+        <section className="hero" id="overview" aria-labelledby="hero-title">
           <div className="shell hero-shell">
             <div className="hero-grid">
               <div className="hero-copy">
                 <span className="kicker hero-kicker">Procurement Manager</span>
                 <h1 className="hero-title" id="hero-title">
-                  Procurement built with Ramp precision
+                  Procurement infrastructure for operators
                 </h1>
                 <p className="hero-description">
-                  Command intake, approvals, and suppliers from one pane of glass. Procurement Manager gives your team the same
-                  rigor Ramp uses to run its own spend program.
+                  The workspace your team already runs on—structured intake, accountable approvals, and vendor dossiers—presented
+                  with the clarity leadership expects. No marketing spin, just the control center that keeps spend moving.
                 </p>
-                <ul className="hero-list">
-                  {heroSignals.map((signal) => (
-                    <li key={signal}>{signal}</li>
-                  ))}
-                </ul>
                 <div className="hero-actions">
-                  <a className="button primary" href="#contact">
-                    Request a walkthrough
+                  <a className="button primary" href="#model">
+                    Review operating model
                   </a>
-                  <a className="button secondary" href="#playbooks">
-                    Download program guide
+                  <a className="button ghost" href="#roles">
+                    Open role handbook
                   </a>
                 </div>
-                <div className="hero-metrics">
+                <dl className="hero-metrics">
                   {heroMetrics.map((metric) => (
                     <div className="metric" key={metric.label}>
-                      <span className="metric-value">{metric.value}</span>
-                      <span className="metric-label">{metric.label}</span>
+                      <dt>{metric.value}</dt>
+                      <dd>{metric.label}</dd>
                     </div>
                   ))}
-                </div>
+                </dl>
               </div>
-              <aside className="hero-preview" aria-label="Procurement queue preview">
-                <div className="preview-header">
-                  <div>
-                    <span className="preview-title">Active requests</span>
-                    <p className="preview-subtitle">Live queue synced with finance &amp; legal</p>
+              <aside className="hero-visual" aria-hidden="true">
+                <div className="rule-card">
+                  <div className="rule-header">
+                    <div className="rule-owner">
+                      <span className="avatar">AV</span>
+                      <div className="owner-text">
+                        <span className="owner-role">Manager</span>
+                        <span className="owner-name">Amelia Vaughn</span>
+                      </div>
+                    </div>
+                    <span className="rule-tag">Admin</span>
                   </div>
-                  <span className="preview-pill">Realtime</span>
+                  <div className="rule-flow">
+                    <span className="flow-node" />
+                    <span className="flow-line" />
+                    <span className="flow-node" />
+                    <span className="flow-line dashed" />
+                    <span className="flow-node" />
+                  </div>
+                  <div className="rule-body">
+                    <div className="rule-condition">
+                      <span className="chip muted">If the</span>
+                      <span className="chip">Amount</span>
+                      <span className="chip muted">is above</span>
+                      <span className="chip highlight">$500</span>
+                    </div>
+                    <div className="rule-require">
+                      <span className="chip muted">Require</span>
+                      <span className="chip role finance">Finance team</span>
+                      <span className="chip role it">IT team</span>
+                    </div>
+                    <button type="button" className="add-rule">
+                      + Add rule
+                    </button>
+                  </div>
                 </div>
-                <ul className="preview-list">
-                  {heroPreview.map((item) => (
-                    <li className="preview-row" key={item.name}>
-                      <div className="preview-main">
-                        <span className="preview-name">{item.name}</span>
-                        <span className="preview-meta">{item.meta}</span>
-                      </div>
-                      <div className="preview-meta-group">
-                        <span className="preview-amount">{item.amount}</span>
-                        <span className={`preview-status ${item.tone}`}>{item.status}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                <div className="preview-footer">
-                  <div>
-                    <span className="preview-footer-label">Savings surfaced this quarter</span>
-                    <span className="preview-footer-value">$940K</span>
+                <div className="notifications-card">
+                  <div className="notification primary">
+                    <div className="notification-header">
+                      <span className="notification-app teams">Teams</span>
+                      <span className="notification-status">Syncing…</span>
+                    </div>
+                    <p className="notification-title">Nathan requested spend</p>
+                    <div className="notification-actions">
+                      <button type="button">Approve</button>
+                      <button type="button">Decline</button>
+                    </div>
                   </div>
-                  <span className="preview-trend positive">▲ 18% vs prior quarter</span>
+                  <div className="notification stack">
+                    <div className="notification-header">
+                      <span className="notification-app slack">Slack</span>
+                      <span className="notification-status">Live</span>
+                    </div>
+                    <p className="notification-title">Shannon requested spend</p>
+                    <div className="notification-actions">
+                      <button type="button">Approve</button>
+                      <button type="button">Decline</button>
+                    </div>
+                  </div>
+                  <div className="integration-chip oracle">Oracle NetSuite</div>
+                  <div className="integration-chip quickbooks">Intuit QuickBooks</div>
+                  <div className="integration-chip okta">Okta SSO</div>
                 </div>
               </aside>
             </div>
           </div>
         </section>
 
-        <section className="trusted" aria-label="Trusted by leading teams">
-          <div className="shell trusted-shell">
-            <span className="trusted-label">Trusted by procurement teams at</span>
-            <div className="trusted-logos">
-              {trustedLogos.map((logo) => (
-                <span key={logo}>{logo}</span>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="overview" id="overview" aria-labelledby="overview-heading">
+        <section className="operating" id="model" aria-labelledby="operating-heading">
           <div className="shell">
             <div className="section-heading">
-              <span className="kicker">Overview</span>
-              <h2 id="overview-heading">A control center for modern procurement</h2>
+              <span className="kicker">Operating model</span>
+              <h2 id="operating-heading">How Procurement Manager is structured</h2>
               <p>
-                Roll out the same discipline Ramp uses internally—streamlined intake, automated approvals, and renewal intelligence
-                designed for operators.
+                A concise view of the surfaces, rituals, and guardrails that keep procurement predictable. Share this with new
+                teammates so they understand what lives where.
               </p>
             </div>
-            <div className="pillars-grid">
-              {pillars.map((pillar) => (
-                <article className="pillar-card" key={pillar.title}>
-                  <h3>{pillar.title}</h3>
-                  <p>{pillar.description}</p>
-                  <ul>
-                    {pillar.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="platform" id="platform" aria-labelledby="platform-heading">
-          <div className="shell">
-            <div className="section-heading">
-              <span className="kicker">Platform</span>
-              <h2 id="platform-heading">Everything connects back to your systems</h2>
-              <p>
-                Procurement Manager eliminates swivel-chair work by syncing with finance, legal, and security tools from intake to
-                renewal.
-              </p>
-            </div>
-            <div className="platform-grid">
-              {platformHighlights.map((item) => (
-                <article className="platform-card" key={item.title}>
-                  <span className="platform-label">{item.label}</span>
+            <div className="operating-grid">
+              {operatingModel.map((item) => (
+                <article className="operating-card" key={item.title}>
                   <h3>{item.title}</h3>
-                  <p>{item.description}</p>
+                  <p>{item.summary}</p>
                   <ul>
                     {item.points.map((point) => (
                       <li key={point}>{point}</li>
@@ -463,32 +368,28 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="workflow" id="workflow" aria-labelledby="workflow-heading">
+        <section className="rituals" aria-labelledby="rituals-heading">
           <div className="shell">
             <div className="section-heading">
-              <span className="kicker">Workflow</span>
-              <h2 id="workflow-heading">Built for the full procurement lifecycle</h2>
+              <span className="kicker">Rhythm of work</span>
+              <h2 id="rituals-heading">Daily and weekly cadences</h2>
               <p>
-                From the first request to renewal, every phase is orchestrated with stakeholders, documentation, and accountability
-                in view.
+                Keep the team aligned on what happens when. Use this cadence to plan staffing, office hours, and leadership
+                visibility.
               </p>
             </div>
-            <div className="workflow-grid">
-              {workflow.map((step) => (
-                <article className="workflow-step" key={step.id}>
-                  <span className="workflow-id" aria-hidden="true">
-                    {step.id}
-                  </span>
-                  <div className="workflow-content">
-                    <h3>{step.title}</h3>
-                    <p>{step.description}</p>
-                    <ul>
-                      {step.bullets.map((bullet) => (
-                        <li key={bullet}>{bullet}</li>
-                      ))}
-                    </ul>
+            <div className="timeline" role="list">
+              {rituals.map((item) => (
+                <div className="timeline-row" role="listitem" key={item.title}>
+                  <div className="timeline-marker">
+                    <span className="timeline-dot" />
+                    <span className="timeline-time">{item.time}</span>
                   </div>
-                </article>
+                  <div className="timeline-content">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -497,77 +398,54 @@ export default function Landing() {
         <section className="roles" id="roles" aria-labelledby="roles-heading">
           <div className="shell">
             <div className="section-heading">
-              <span className="kicker">Roles</span>
-              <h2 id="roles-heading">Designed for every stakeholder</h2>
+              <span className="kicker">Role handbook</span>
+              <h2 id="roles-heading">What each team owns inside Procurement Manager</h2>
               <p>
-                Select a persona to see the priorities, rituals, and tools available to your team inside Procurement Manager.
+                Select your role to review responsibilities, cadence, and the workspaces you will live in day to day.
               </p>
             </div>
-            <div className="role-controls">
-              <div className="role-tabs" role="tablist" aria-label="Procurement personas">
-                {roleViews.map((role) => {
-                  const isActive = role.id === selectedRole;
-                  return (
-                    <button
-                      key={role.id}
-                      type="button"
-                      role="tab"
-                      className={`role-tab${isActive ? " is-active" : ""}`}
-                      aria-selected={isActive}
-                      aria-controls={`role-panel-${role.id}`}
-                      id={`role-tab-${role.id}`}
-                      onClick={() => setSelectedRole(role.id)}
-                    >
-                      {role.label}
-                    </button>
-                  );
-                })}
-              </div>
-              <label className="role-select-label" htmlFor="role-select">
-                <span className="sr-only">Select a role</span>
-                <select
-                  id="role-select"
-                  className="role-select"
-                  value={selectedRole}
-                  onChange={(event) => setSelectedRole(event.target.value)}
-                >
-                  {roleViews.map((role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            <div className="role-selector">
+              <label htmlFor="role-select">Role</label>
+              <select
+                id="role-select"
+                className="role-select"
+                value={selectedRole}
+                onChange={(event) => setSelectedRole(event.target.value)}
+              >
+                {roleViews.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.label}
+                  </option>
+                ))}
+              </select>
             </div>
-            <article
-              className="role-panel"
-              role="tabpanel"
-              id={`role-panel-${activeRole.id}`}
-              aria-labelledby={`role-tab-${activeRole.id}`}
-            >
+            <article className="role-panel" aria-live="polite">
               <div className="role-header">
                 <h3>{activeRole.headline}</h3>
                 <p>{activeRole.summary}</p>
               </div>
-              <div className="role-body">
+              <div className="role-columns">
                 <div className="role-column">
-                  <h4>Weekly priorities</h4>
+                  <h4>Responsibilities</h4>
                   <ul>
-                    {activeRole.priorities.map((priority) => (
-                      <li key={priority}>{priority}</li>
+                    {activeRole.responsibilities.map((item) => (
+                      <li key={item}>{item}</li>
                     ))}
                   </ul>
                 </div>
                 <div className="role-column">
-                  <h4>Workspace toolkit</h4>
-                  <ul className="toolkit-list">
-                    {activeRole.toolkit.map((tool) => (
-                      <li key={tool.label}>
-                        <div className="tool-card">
-                          <span className="tool-title">{tool.label}</span>
-                          <p>{tool.description}</p>
-                        </div>
-                      </li>
+                  <h4>Cadence</h4>
+                  <ul>
+                    {activeRole.cadence.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="role-column">
+                  <h4>Key surfaces</h4>
+                  <ul>
+                    {activeRole.tools.map((item) => (
+                      <li key={item}>{item}</li>
                     ))}
                   </ul>
                 </div>
@@ -576,23 +454,23 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="playbooks" id="playbooks" aria-labelledby="playbooks-heading">
+        <section className="guides" id="guides" aria-labelledby="guides-heading">
           <div className="shell">
             <div className="section-heading">
-              <span className="kicker">Playbooks</span>
-              <h2 id="playbooks-heading">Guides to launch and scale the program</h2>
+              <span className="kicker">Guides</span>
+              <h2 id="guides-heading">Resources to onboard or refresh</h2>
               <p>
-                Use the Ramp procurement playbooks to onboard teams, run month-end, and prep renewals without building from
-                scratch.
+                Quick references to share with new hires or stakeholders joining the program. Save them to your internal wiki or
+                procurement channel.
               </p>
             </div>
-            <div className="playbook-grid">
-              {playbooks.map((playbook) => (
-                <article className="playbook-card" key={playbook.title}>
-                  <h3>{playbook.title}</h3>
-                  <p>{playbook.description}</p>
+            <div className="guide-grid">
+              {quickGuides.map((guide) => (
+                <article className="guide-card" key={guide.title}>
+                  <h3>{guide.title}</h3>
+                  <p>{guide.description}</p>
                   <button type="button" className="text-button">
-                    {playbook.action}
+                    {guide.action}
                   </button>
                 </article>
               ))}
@@ -600,30 +478,23 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="final-cta" id="contact" aria-labelledby="contact-heading">
+        <section className="support" id="support" aria-labelledby="support-heading">
           <div className="shell">
-            <div className="final-cta-card">
-              <div className="final-cta-copy">
-                <span className="kicker final-kicker">Next step</span>
-                <h2 id="contact-heading">Partner with the procurement desk</h2>
-                <p>
-                  Schedule a working session with the Procurement Manager team to see your data flows, policy guardrails, and
-                  stakeholder rituals come to life.
-                </p>
-                <ul>
-                  <li>Tailored walkthrough with admin, finance, and procurement leads.</li>
-                  <li>Integration review across ERP, HRIS, CLM, and collaboration tools.</li>
-                  <li>Implementation plan aligned to your quarter-end milestones.</li>
-                </ul>
-              </div>
-              <div className="final-cta-actions">
-                <a className="button primary" href="mailto:operations@procurementmanager.com">
-                  operations@procurementmanager.com
-                </a>
-                <a className="button tertiary" href="#top">
-                  View product overview again
-                </a>
-              </div>
+            <div className="section-heading">
+              <span className="kicker">Support</span>
+              <h2 id="support-heading">Connect with the procurement desk</h2>
+              <p>
+                Use the channels below for escalations, walkthrough requests, or to keep leadership in the loop.
+              </p>
+            </div>
+            <div className="support-grid">
+              {supportChannels.map((channel) => (
+                <article className="support-card" key={channel.title}>
+                  <h3>{channel.title}</h3>
+                  <p className="support-contact">{channel.contact}</p>
+                  <p>{channel.note}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
