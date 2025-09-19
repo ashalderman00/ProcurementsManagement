@@ -596,6 +596,28 @@ app.get('/api/requests', async (_req, res) => {
   res.json(rows);
 });
 
+app.get('/api/requests/:id', async (req, res) => {
+  const id = Number.parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid request id' });
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT r.id,r.title,r.amount,r.status,r.created_at,r.category_id,c.name AS category_name,
+              r.vendor_id,v.name AS vendor_name, r.po_number
+         FROM requests r
+         LEFT JOIN categories c ON c.id=r.category_id
+         LEFT JOIN vendors v ON v.id=r.vendor_id
+        WHERE r.id=$1`,
+      [id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'request not found' });
+    res.json(rows[0]);
+  } catch (e) {
+    console.error('request fetch failed', e);
+    res.status(500).json({ error: 'failed to fetch request' });
+  }
+});
+
 app.get('/api/requests/:id/approvals', authRequired, async (req, res) => {
   const { rows } = await pool.query(
     'SELECT * FROM request_approvals WHERE request_id=$1 ORDER BY stage_index',
