@@ -5,7 +5,7 @@ publish = "dist"
 
 [build.environment]
 # Your Render backend base URL for production
-VITE_API_BASE = "https://procurementsmanagement.onrender.com/api"
+VITE_API_BASE = "https://procurementsmanagement.onrender.com"
 
 # SPA: route all paths to index.html so deep links work
 [[redirects]]
