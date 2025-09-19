@@ -19,16 +19,26 @@ export default function RequestDetailDrawer({ open, onClose }) {
 
   async function load() {
     setLoading(true);
-    try{
-      const [list, st, cm, au] = await Promise.all([
-        apiGet("/api/requests"),
-        apiGet(`/api/requests/${id}/files`).catch(()=>[]),
-        apiGet(`/api/requests/${id}/comments`).catch(()=>[]),
-        apiGet(`/api/requests/${id}/audit`).catch(()=>[])
+    try {
+      const [detail, st, cm, au] = await Promise.all([
+        apiGet(`/api/requests/${id}`),
+        apiGet(`/api/requests/${id}/files`).catch(() => []),
+        apiGet(`/api/requests/${id}/comments`).catch(() => []),
+        apiGet(`/api/requests/${id}/audit`).catch(() => [])
       ]);
-      setReq(list.find(r=> String(r.id)===String(id)) || null);
-      setFiles(st||[]); setComments(cm||[]); setAudit(au||[]);
-    } finally { setLoading(false); }
+      setReq(detail || null);
+      setFiles(st || []);
+      setComments(cm || []);
+      setAudit(au || []);
+    } catch (err) {
+      console.error("failed to load request", err);
+      setReq(null);
+      setFiles([]);
+      setComments([]);
+      setAudit([]);
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(()=>{ if(open) load(); }, [id, open]);
 
@@ -47,8 +57,21 @@ export default function RequestDetailDrawer({ open, onClose }) {
   }
 
   async function approve(){
-    await apiPost(`/api/requests/${id}/approve`, {});
-    setAudit(await apiGet(`/api/requests/${id}/audit`));
+    try {
+      await apiPost(`/api/requests/${id}/approve`, {});
+      await load();
+    } catch (err) {
+      console.error("approve failed", err);
+    }
+  }
+
+  async function deny(){
+    try {
+      await apiPost(`/api/requests/${id}/deny`, {});
+      await load();
+    } catch (err) {
+      console.error("deny failed", err);
+    }
   }
 
   return (
@@ -71,6 +94,7 @@ export default function RequestDetailDrawer({ open, onClose }) {
               <Row k="Created" v={new Date(req.created_at).toLocaleString()} />
               <div className="flex gap-2">
                 <Button variant="ghost" onClick={approve}>Approve</Button>
+                <Button variant="ghost" onClick={deny}>Deny</Button>
               </div>
             </div>
           )}
