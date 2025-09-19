@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { apiGet, apiPost, apiPatch, apiUpload } from "../lib/api";
+import { apiGet, apiPost, apiUpload } from "../lib/api";
 import { Card, CardBody, CardHeader } from "../components/Card";
 import { T, Th, Td } from "../components/Table";
 import Badge from "../components/Badge";
@@ -64,10 +64,15 @@ export default function Requests() {
 
   async function setStage(id, next) {
     try {
-      const updated = await apiPatch("/api/requests/" + id, { status: next });
-      setItems(items.map(i => i.id === id ? updated : i));
-      toast.success("Status → " + next);
-    } catch { toast.error("Update failed"); }
+      if (next !== "approved" && next !== "denied") throw new Error("Unsupported status");
+      const action = next === "approved" ? "approve" : "deny";
+      await apiPost(`/api/requests/${id}/${action}`, {});
+      setItems(await apiGet("/api/requests"));
+      toast.success(next === "approved" ? "Approval recorded" : "Denial recorded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Update failed");
+    }
   }
 
   return (
