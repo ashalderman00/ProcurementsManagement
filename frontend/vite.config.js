@@ -12,5 +12,9 @@ export default defineConfig({
       // forward /api calls to the backend on port 4000
       '/api': 'http://localhost:4000'
     }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom'
   }
 })

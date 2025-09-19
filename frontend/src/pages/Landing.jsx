@@ -211,7 +211,7 @@ const accessSteps = [
     description:
       "Use your company email to create a Procurement Manager account. Access is governed through SSO.",
     meta: "Self-serve",
-    action: { label: "Create account", href: "/create-account", tone: "primary" },
+    action: { label: "Create account", href: "/signup", tone: "primary" },
   },
   {
     title: "Sign in securely",
@@ -249,10 +249,10 @@ export default function Landing() {
             ))}
           </nav>
           <div className="nav-actions">
-            <a className="nav-link" href="#access">
+            <a className="nav-link" href="/login">
               Sign in
             </a>
-            <a className="nav-cta" href="#access">
+            <a className="nav-cta" href="/signup">
               Create account
             </a>
           </div>
@@ -273,10 +273,10 @@ export default function Landing() {
                   the teams already running the program—clarity first, marketing last.
                 </p>
                 <div className="hero-actions">
-                  <a className="button primary" href="#access">
+                  <a className="button primary" href="/login">
                     Sign in
                   </a>
-                  <a className="button outline" href="#access">
+                  <a className="button outline" href="/signup">
                     Create account
                   </a>
                   <a className="text-link" href="#resources">

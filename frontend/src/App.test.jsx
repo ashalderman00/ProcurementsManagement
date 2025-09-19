@@ -9,5 +9,5 @@ test('renders Requests navigation button', () => {
       <App />
     </MemoryRouter>
   );
-  expect(screen.getByRole('button', { name: /requests/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /requests/i })).toBeInTheDocument();
 });
