@@ -1,13 +1,23 @@
 const request = require('supertest');
 const app = require('../index');
 
-describe('POST /auth/register', () => {
-  it('registers a new user', async () => {
+describe('POST /api/auth/signup', () => {
+  it('registers a new user and returns a session token', async () => {
     const res = await request(app)
-      .post('/auth/register')
-      .send({ username: 'tester', password: 'password', role: 'Requester' });
+      .post('/api/auth/signup')
+      .send({
+        email: 'tester@example.com',
+        password: 'password',
+        role: 'Requester',
+      });
 
     expect(res.statusCode).toBe(201);
-    expect(res.body).toEqual({ message: 'User registered' });
+    expect(typeof res.body.token).toBe('string');
+    expect(res.body.token.length).toBeGreaterThan(0);
+    expect(res.body.user).toEqual({
+      id: 1,
+      email: 'tester@example.com',
+      role: 'requester',
+    });
   });
 });
