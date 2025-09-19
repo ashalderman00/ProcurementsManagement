@@ -1,34 +1,90 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import AuthLayout from "../components/AuthLayout";
 import { apiPost } from "../lib/api";
 
-export default function Login() {
-  const [email,setEmail]=useState("");
-  const [password,setPassword]=useState("");
-  const [err,setErr]=useState("");
+const inputClass =
+  "w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20";
+const labelClass = "text-sm font-medium text-slate-600";
+const buttonClass =
+  "w-full rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-600 py-3 text-sm font-medium text-white shadow-lg shadow-blue-500/30 transition hover:from-blue-600 hover:to-indigo-600 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-80";
 
-  async function submit(e){
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  async function submit(e) {
     e.preventDefault();
     setErr("");
+    setLoading(true);
     try {
       const { token, user } = await apiPost("/api/auth/login", { email, password });
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      location.href = "/app";
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      navigate("/app", { replace: true });
     } catch {
-      setErr("Invalid email or password");
+      setErr("Invalid email or password. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div className="max-w-sm mx-auto bg-white rounded-xl border border-slate-200 p-6 mt-10">
-      <h2 className="text-lg font-semibold mb-2">Log in</h2>
-      {err && <p className="text-red-600 mb-2">{err}</p>}
-      <form onSubmit={submit} className="space-y-2">
-        <input className="w-full rounded-lg border px-3 py-2" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
-        <input className="w-full rounded-lg border px-3 py-2" placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
-        <button className="w-full rounded-lg bg-blue-600 text-white py-2 hover:bg-blue-700">Log in</button>
-      </form>
-      <p className="text-sm text-slate-600 mt-3">New? <a href="/signup" className="text-blue-600 underline">Create an account</a></p>
-    </div>
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Sign in with your work credentials to keep requests, approvals, and vendors moving."
+    >
+      <>
+        {err ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-600 shadow-sm">
+            {err}
+          </div>
+        ) : null}
+        <form onSubmit={submit} className="space-y-5">
+          <div className="space-y-1.5">
+            <label htmlFor="email" className={labelClass}>
+              Work email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              className={inputClass}
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="password" className={labelClass}>
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              className={inputClass}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <button type="submit" disabled={loading} className={buttonClass}>
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+        <p className="text-center text-sm text-slate-500">
+          New to Procurement Manager?{" "}
+          <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-700">
+            Create an account
+          </Link>
+        </p>
+      </>
+    </AuthLayout>
   );
 }
