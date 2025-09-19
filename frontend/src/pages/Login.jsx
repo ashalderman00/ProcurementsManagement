@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { KeyRound, UserPlus } from "lucide-react";
 import AuthLayout from "../components/AuthLayout";
 import { apiPost } from "../lib/api";
 
@@ -30,19 +29,6 @@ const buttonClass = [
   "disabled:opacity-80",
 ].join(" ");
 
-const supportTiles = [
-  {
-    icon: UserPlus,
-    title: "Invite your team",
-    description: "Admins add finance, approver, buyer, and requester roles from Workspace Settings.",
-  },
-  {
-    icon: KeyRound,
-    title: "Need a reset?",
-    description: "Your workspace admin can trigger a password reset in seconds.",
-  },
-];
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,10 +53,7 @@ export default function Login() {
   }
 
   return (
-    <AuthLayout
-      title="Welcome back"
-      subtitle="Sign in to keep requests, vendors, and approvals moving."
-    >
+    <AuthLayout title="Welcome back" subtitle="Sign in to your workspace.">
       <>
         {err ? (
           <div className="rounded-2xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-600 shadow-sm">
@@ -112,24 +95,9 @@ export default function Login() {
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {supportTiles.map(({ icon: Icon, title, description }) => (
-            <div
-              key={title}
-              className="rounded-2xl border border-slate-200/70 bg-slate-50/70 p-4 shadow-sm"
-            >
-              <div className="flex items-start gap-3">
-                <span className="mt-1 rounded-xl bg-white p-2 text-blue-600 shadow-sm">
-                  <Icon size={18} />
-                </span>
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-slate-700">{title}</p>
-                  <p className="text-xs leading-relaxed text-slate-500">{description}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <p className="text-center text-xs text-slate-500">
+          Locked out? Your workspace admin can help reset access.
+        </p>
         <p className="text-center text-sm text-slate-500">
           New to Procurement Manager?{" "}
           <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-700">
