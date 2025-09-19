@@ -340,6 +340,72 @@ app.post(
   }
 );
 
+app.get('/api/vendors/:id', async (req, res) => {
+  const id = Number.parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid vendor id' });
+  const { rows } = await pool.query('SELECT * FROM vendors WHERE id=$1', [id]);
+  if (!rows.length) return res.status(404).json({ error: 'vendor not found' });
+  res.json(rows[0]);
+});
+
+app.patch(
+  '/api/vendors/:id',
+  authRequired,
+  roleRequired('admin'),
+  async (req, res) => {
+    const id = Number.parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid vendor id' });
+
+    const allowedStatus = ['active', 'blocked'];
+    const allowedRisk = ['low', 'medium', 'high'];
+    const { name, status, risk, website, notes } = req.body || {};
+
+    const updates = [];
+    const values = [];
+
+    if (name !== undefined) {
+      updates.push(`name=$${updates.length + 1}`);
+      values.push(String(name).trim());
+    }
+    if (status !== undefined) {
+      if (!allowedStatus.includes(status))
+        return res.status(400).json({ error: 'invalid status' });
+      updates.push(`status=$${updates.length + 1}`);
+      values.push(status);
+    }
+    if (risk !== undefined) {
+      if (!allowedRisk.includes(risk))
+        return res.status(400).json({ error: 'invalid risk' });
+      updates.push(`risk=$${updates.length + 1}`);
+      values.push(risk);
+    }
+    if (website !== undefined) {
+      updates.push(`website=$${updates.length + 1}`);
+      values.push(website ? String(website) : null);
+    }
+    if (notes !== undefined) {
+      updates.push(`notes=$${updates.length + 1}`);
+      values.push(notes === null ? null : String(notes));
+    }
+
+    if (!updates.length)
+      return res.status(400).json({ error: 'no fields to update' });
+
+    try {
+      const { rows } = await pool.query(
+        `UPDATE vendors SET ${updates.join(', ')} WHERE id=$${updates.length + 1} RETURNING *`,
+        [...values, id]
+      );
+      if (!rows.length)
+        return res.status(404).json({ error: 'vendor not found' });
+      res.json(rows[0]);
+    } catch (e) {
+      console.error('vendor update failed', e);
+      res.status(500).json({ error: 'update failed' });
+    }
+  }
+);
+
 // ===== categories (kept) =====
 app.get('/api/categories', async (_req, res) => {
   const { rows } = await pool.query(
@@ -402,6 +468,118 @@ app.post(
       ]
     );
     res.status(201).json(rows[0]);
+  }
+);
+
+app.patch(
+  '/api/approval-rules/:id',
+  authRequired,
+  roleRequired('admin'),
+  async (req, res) => {
+    const id = Number.parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid rule id' });
+
+    const {
+      name,
+      min_amount,
+      max_amount,
+      category_id,
+      vendor_id,
+      stages,
+      active,
+    } = req.body || {};
+
+    const updates = [];
+    const values = [];
+
+    if (name !== undefined) {
+      updates.push(`name=$${updates.length + 1}`);
+      values.push(String(name));
+    }
+    if (min_amount !== undefined) {
+      const min = Number(min_amount);
+      if (Number.isNaN(min))
+        return res.status(400).json({ error: 'invalid min_amount' });
+      updates.push(`min_amount=$${updates.length + 1}`);
+      values.push(min);
+    }
+    if (max_amount !== undefined) {
+      let max = null;
+      if (max_amount !== null && max_amount !== '') {
+        max = Number(max_amount);
+        if (Number.isNaN(max))
+          return res.status(400).json({ error: 'invalid max_amount' });
+      }
+      updates.push(`max_amount=$${updates.length + 1}`);
+      values.push(max);
+    }
+    if (category_id !== undefined) {
+      let cat = null;
+      if (category_id !== null && category_id !== '') {
+        cat = Number(category_id);
+        if (Number.isNaN(cat))
+          return res.status(400).json({ error: 'invalid category_id' });
+      }
+      updates.push(`category_id=$${updates.length + 1}`);
+      values.push(cat);
+    }
+    if (vendor_id !== undefined) {
+      let vendor = null;
+      if (vendor_id !== null && vendor_id !== '') {
+        vendor = Number(vendor_id);
+        if (Number.isNaN(vendor))
+          return res.status(400).json({ error: 'invalid vendor_id' });
+      }
+      updates.push(`vendor_id=$${updates.length + 1}`);
+      values.push(vendor);
+    }
+    if (stages !== undefined) {
+      if (!Array.isArray(stages) || !stages.length)
+        return res.status(400).json({ error: 'stages must be a non-empty array' });
+      updates.push(`stages=$${updates.length + 1}`);
+      values.push(JSON.stringify(stages));
+    }
+    if (active !== undefined) {
+      updates.push(`active=$${updates.length + 1}`);
+      const nextActive =
+        typeof active === 'string' ? active.toLowerCase() === 'true' : Boolean(active);
+      values.push(nextActive);
+    }
+
+    if (!updates.length)
+      return res.status(400).json({ error: 'no fields to update' });
+
+    try {
+      const { rows } = await pool.query(
+        `UPDATE approval_rules SET ${updates.join(', ')} WHERE id=$${updates.length + 1} RETURNING *`,
+        [...values, id]
+      );
+      if (!rows.length)
+        return res.status(404).json({ error: 'rule not found' });
+      res.json(rows[0]);
+    } catch (e) {
+      console.error('approval rule update failed', e);
+      res.status(500).json({ error: 'update failed' });
+    }
+  }
+);
+
+app.delete(
+  '/api/approval-rules/:id',
+  authRequired,
+  roleRequired('admin'),
+  async (req, res) => {
+    const id = Number.parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid rule id' });
+    try {
+      const result = await pool.query('DELETE FROM approval_rules WHERE id=$1', [id]);
+      if (!result.rowCount)
+        return res.status(404).json({ error: 'rule not found' });
+      res.json({ ok: true });
+    } catch (e) {
+      console.error('approval rule delete failed', e);
+      res.status(500).json({ error: 'delete failed' });
+    }
   }
 );
 
@@ -483,6 +661,87 @@ app.post('/api/requests', authRequired, async (req, res) => {
     client.release();
   }
 });
+
+app.patch(
+  '/api/requests/:id',
+  authRequired,
+  roleRequired('admin', 'approver'),
+  async (req, res) => {
+    const requestId = Number.parseInt(req.params.id, 10);
+    if (Number.isNaN(requestId))
+      return res.status(400).json({ error: 'invalid request id' });
+
+    const rawStatus = req.body?.status;
+    const status = typeof rawStatus === 'string' ? rawStatus.toLowerCase() : '';
+    const allowed = ['pending', 'approved', 'denied'];
+    if (!allowed.includes(status))
+      return res.status(400).json({ error: 'invalid status' });
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const existing = await client.query(
+        'SELECT id FROM requests WHERE id=$1 FOR UPDATE',
+        [requestId]
+      );
+      if (!existing.rows.length) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'request not found' });
+      }
+
+      await client.query('UPDATE requests SET status=$1 WHERE id=$2', [status, requestId]);
+
+      if (status === 'pending') {
+        await client.query(
+          'UPDATE request_approvals SET status=$1, acted_by=NULL, acted_at=NULL WHERE request_id=$2',
+          ['pending', requestId]
+        );
+      } else {
+        await client.query(
+          'UPDATE request_approvals SET status=$1, acted_by=$2, acted_at=NOW() WHERE request_id=$3 AND status=$4',
+          [status, req.user.id, requestId, 'pending']
+        );
+      }
+
+      await recomputeRequestStatus(client, requestId);
+
+      await client
+        .query(
+          'INSERT INTO audit_log(object_type, object_id, action, actor_id, meta) VALUES($1,$2,$3,$4,$5)',
+          [
+            'request',
+            requestId,
+            'status_override',
+            req.user.id,
+            JSON.stringify({ status }),
+          ]
+        )
+        .catch(() => {});
+
+      const detail = await client.query(
+        `SELECT r.id,r.title,r.amount,r.status,r.created_at,r.category_id,c.name AS category_name,
+                r.vendor_id,v.name AS vendor_name, r.po_number
+           FROM requests r
+           LEFT JOIN categories c ON c.id=r.category_id
+           LEFT JOIN vendors v ON v.id=r.vendor_id
+          WHERE r.id=$1`,
+        [requestId]
+      );
+
+      await client.query('COMMIT');
+
+      if (!detail.rows.length)
+        return res.status(404).json({ error: 'request not found' });
+      res.json(detail.rows[0]);
+    } catch (e) {
+      await client.query('ROLLBACK');
+      console.error('request status update failed', e);
+      res.status(500).json({ error: 'update failed' });
+    } finally {
+      client.release();
+    }
+  }
+);
 
 // stage approve/deny (enforce role per stage)
 app.post('/api/requests/:id/approve', authRequired, async (req, res) => {
