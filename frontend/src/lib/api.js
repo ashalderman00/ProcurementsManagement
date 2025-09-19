@@ -63,3 +63,24 @@ export async function apiUpload(path, file) {
   if (!res.ok) throw new Error(`UPLOAD ${url} ${res.status} ${res.statusText} :: ${JSON.stringify(await parseOrText(res))}`);
   return res.json();
 }
+
+export async function apiDelete(path) {
+  const url = join(RAW_BASE, path);
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: { ...authHeader() },
+  });
+  if (!res.ok && res.status !== 204) {
+    throw new Error(
+      `DELETE ${url} ${res.status} ${res.statusText} :: ${JSON.stringify(await parseOrText(res))}`
+    );
+  }
+  if (res.status === 204) return null;
+  const text = await res.text().catch(() => '');
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { _raw: text };
+  }
+}
