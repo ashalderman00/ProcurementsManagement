@@ -1,12 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { pool } = require('./db');
+const Orders = require('./models/order');
+const ORDER_STATUSES = (Array.isArray(Orders.ORDER_STATUSES)
+  ? Orders.ORDER_STATUSES
+  : ['draft', 'issued', 'receiving', 'received', 'cancelled']
+).map((status) => status.toLowerCase());
 const {
   pickRule,
   materializeStages,
@@ -20,15 +25,6 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-const conn =
-  process.env.DATABASE_URL ||
-  'postgres://postgres:postgres@localhost:5432/procurement_db';
-const needsSSL = /render\.com|sslmode=require/i.test(conn);
-const pool = new Pool({
-  connectionString: conn,
-  ssl: needsSSL ? { rejectUnauthorized: false } : false,
-});
 
 app.use((req, _res, next) => {
   console.log(`[API] ${req.method} ${req.url}`);
@@ -74,6 +70,17 @@ function toTitle(value) {
     .split(/[\s_]+/)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
+}
+
+function normalizeOrderDate(input) {
+  if (input === undefined || input === null || input === '') {
+    return { value: null, valid: true };
+  }
+  const date = new Date(input);
+  if (Number.isNaN(date.getTime())) {
+    return { value: null, valid: false };
+  }
+  return { value: date.toISOString().slice(0, 10), valid: true };
 }
 
 // ===== auth helpers =====
@@ -850,6 +857,255 @@ app.get('/api/requests/:id/files', authRequired, async (req, res) => {
   );
   res.json(rows);
 });
+
+// ===== purchase orders =====
+app.get('/api/orders', async (_req, res) => {
+  try {
+    const rows = await Orders.getAll();
+    res.json(rows);
+  } catch (error) {
+    console.error('orders.list.error', error);
+    res.status(500).json({ error: 'failed to load orders' });
+  }
+});
+
+app.get('/api/orders/:id', async (req, res) => {
+  const orderId = Number.parseInt(req.params.id, 10);
+  if (Number.isNaN(orderId)) {
+    return res.status(400).json({ error: 'invalid order id' });
+  }
+  try {
+    const order = await Orders.findById(orderId);
+    if (!order) return res.status(404).json({ error: 'order not found' });
+    res.json(order);
+  } catch (error) {
+    console.error('orders.detail.error', error);
+    res.status(500).json({ error: 'failed to load order' });
+  }
+});
+
+app.post(
+  '/api/orders',
+  authRequired,
+  roleRequired('admin', 'approver'),
+  async (req, res) => {
+    try {
+      const body = req.body || {};
+      const totalRaw = body.total ?? body.amount ?? body.value;
+      const total = Number(totalRaw);
+      if (Number.isNaN(total) || total < 0) {
+        return res.status(400).json({ error: 'invalid total amount' });
+      }
+
+      const statusRaw =
+        typeof body.status === 'string' ? body.status.toLowerCase().trim() : 'draft';
+      if (body.status !== undefined && !ORDER_STATUSES.includes(statusRaw)) {
+        return res.status(400).json({ error: 'invalid status' });
+      }
+
+      let vendorId = body.vendor_id ?? body.vendorId;
+      let vendorName = body.vendor_name ?? body.vendorName ?? body.vendor;
+      if (vendorId !== undefined && vendorId !== null && vendorId !== '') {
+        vendorId = Number(vendorId);
+        if (Number.isNaN(vendorId)) {
+          return res.status(400).json({ error: 'invalid vendor id' });
+        }
+        const vendorRes = await pool.query('SELECT id,name FROM vendors WHERE id=$1', [vendorId]);
+        if (!vendorRes.rowCount) {
+          return res.status(404).json({ error: 'vendor not found' });
+        }
+        vendorName = vendorRes.rows[0].name;
+      } else {
+        vendorId = null;
+      }
+
+      if (!vendorName || !String(vendorName).trim()) {
+        return res.status(400).json({ error: 'vendor name required' });
+      }
+      vendorName = String(vendorName).trim();
+
+      let requestId = body.request_id ?? body.requestId;
+      if (requestId !== undefined && requestId !== null && requestId !== '') {
+        requestId = Number(requestId);
+        if (Number.isNaN(requestId)) {
+          return res.status(400).json({ error: 'invalid request id' });
+        }
+        const reqRes = await pool.query('SELECT id FROM requests WHERE id=$1', [requestId]);
+        if (!reqRes.rowCount) {
+          return res.status(404).json({ error: 'request not found' });
+        }
+      } else {
+        requestId = null;
+      }
+
+      const poRaw = body.po_number ?? body.poNumber ?? body.number;
+      const poNumber = poRaw && String(poRaw).trim() ? String(poRaw).trim() : null;
+
+      const expectedRaw =
+        body.expected_date ?? body.expectedDate ?? body.due_date ?? body.dueDate;
+      const parsedExpected = normalizeOrderDate(expectedRaw);
+      if (expectedRaw && !parsedExpected.valid) {
+        return res.status(400).json({ error: 'invalid expected date' });
+      }
+
+      const notesRaw = body.notes ?? body.memo;
+      const notes =
+        notesRaw === undefined || notesRaw === null
+          ? null
+          : String(notesRaw).trim() || null;
+
+      const created = await Orders.create({
+        po_number: poNumber,
+        vendor_name: vendorName,
+        vendor_id: vendorId,
+        total,
+        status: statusRaw || 'draft',
+        request_id: requestId,
+        expected_date: parsedExpected.value,
+        notes,
+      });
+
+      res.status(201).json(created);
+    } catch (error) {
+      console.error('orders.create.error', error);
+      res.status(500).json({ error: 'failed to create order' });
+    }
+  }
+);
+
+app.patch(
+  '/api/orders/:id',
+  authRequired,
+  roleRequired('admin', 'approver'),
+  async (req, res) => {
+    const orderId = Number.parseInt(req.params.id, 10);
+    if (Number.isNaN(orderId)) {
+      return res.status(400).json({ error: 'invalid order id' });
+    }
+
+    const body = req.body || {};
+    const updates = {};
+
+    if ('po_number' in body || 'poNumber' in body || 'number' in body) {
+      const raw = body.po_number ?? body.poNumber ?? body.number;
+      updates.po_number = raw && String(raw).trim() ? String(raw).trim() : null;
+    }
+
+    if ('total' in body || 'amount' in body || 'value' in body) {
+      const raw = body.total ?? body.amount ?? body.value;
+      const amount = Number(raw);
+      if (Number.isNaN(amount) || amount < 0) {
+        return res.status(400).json({ error: 'invalid total amount' });
+      }
+      updates.total = amount;
+    }
+
+    if ('status' in body) {
+      const statusValue =
+        typeof body.status === 'string' ? body.status.toLowerCase().trim() : '';
+      if (!ORDER_STATUSES.includes(statusValue)) {
+        return res.status(400).json({ error: 'invalid status' });
+      }
+      updates.status = statusValue;
+    }
+
+    if ('vendor_id' in body || 'vendorId' in body) {
+      const raw = body.vendor_id ?? body.vendorId;
+      if (raw === null || raw === undefined || raw === '') {
+        updates.vendor_id = null;
+      } else {
+        const vendorId = Number(raw);
+        if (Number.isNaN(vendorId)) {
+          return res.status(400).json({ error: 'invalid vendor id' });
+        }
+        const vendorRes = await pool.query('SELECT id,name FROM vendors WHERE id=$1', [vendorId]);
+        if (!vendorRes.rowCount) {
+          return res.status(404).json({ error: 'vendor not found' });
+        }
+        updates.vendor_id = vendorId;
+        updates.vendor_name = vendorRes.rows[0].name;
+      }
+    }
+
+    if ('vendor_name' in body || 'vendorName' in body || 'vendor' in body) {
+      const raw = body.vendor_name ?? body.vendorName ?? body.vendor;
+      if (raw && String(raw).trim()) {
+        updates.vendor_name = String(raw).trim();
+      } else {
+        return res.status(400).json({ error: 'vendor name required' });
+      }
+    }
+
+    if ('request_id' in body || 'requestId' in body) {
+      const raw = body.request_id ?? body.requestId;
+      if (raw === null || raw === undefined || raw === '') {
+        updates.request_id = null;
+      } else {
+        const requestId = Number(raw);
+        if (Number.isNaN(requestId)) {
+          return res.status(400).json({ error: 'invalid request id' });
+        }
+        const reqRes = await pool.query('SELECT id FROM requests WHERE id=$1', [requestId]);
+        if (!reqRes.rowCount) {
+          return res.status(404).json({ error: 'request not found' });
+        }
+        updates.request_id = requestId;
+      }
+    }
+
+    if ('expected_date' in body || 'expectedDate' in body || 'due_date' in body || 'dueDate' in body) {
+      const raw =
+        body.expected_date ?? body.expectedDate ?? body.due_date ?? body.dueDate;
+      const parsed = normalizeOrderDate(raw);
+      if (raw && !parsed.valid) {
+        return res.status(400).json({ error: 'invalid expected date' });
+      }
+      updates.expected_date = parsed.value;
+    }
+
+    if ('notes' in body || 'memo' in body) {
+      const raw = body.notes ?? body.memo;
+      if (raw === null || raw === undefined) {
+        updates.notes = null;
+      } else {
+        updates.notes = String(raw).trim() || null;
+      }
+    }
+
+    if (!Object.keys(updates).length) {
+      return res.status(400).json({ error: 'no fields to update' });
+    }
+
+    try {
+      const updated = await Orders.update(orderId, updates);
+      if (!updated) return res.status(404).json({ error: 'order not found' });
+      res.json(updated);
+    } catch (error) {
+      console.error('orders.update.error', error);
+      res.status(500).json({ error: 'failed to update order' });
+    }
+  }
+);
+
+app.delete(
+  '/api/orders/:id',
+  authRequired,
+  roleRequired('admin', 'approver'),
+  async (req, res) => {
+    const orderId = Number.parseInt(req.params.id, 10);
+    if (Number.isNaN(orderId)) {
+      return res.status(400).json({ error: 'invalid order id' });
+    }
+    try {
+      const removed = await Orders.remove(orderId);
+      if (!removed) return res.status(404).json({ error: 'order not found' });
+      res.status(204).end();
+    } catch (error) {
+      console.error('orders.delete.error', error);
+      res.status(500).json({ error: 'failed to delete order' });
+    }
+  }
+);
 
 if (typeof extraRoutes === 'function')
   extraRoutes(app, pool, authRequired, roleRequired);
