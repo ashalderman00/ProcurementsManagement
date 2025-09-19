@@ -1,7 +1,12 @@
 :root {
   color-scheme: light;
   --bg: #f4f6fb;
-  --bg-gradient: radial-gradient(circle at 20% -10%, rgba(37, 99, 235, 0.12), transparent 55%),
+  --bg-gradient:
+    radial-gradient(
+      circle at 20% -10%,
+      rgba(37, 99, 235, 0.12),
+      transparent 55%
+    ),
     radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.12), transparent 50%);
   --surface: #ffffff;
   --surface-muted: #eef2fb;
@@ -20,7 +25,8 @@
   --radius-sm: 12px;
   --shadow-soft: 0 28px 50px rgba(15, 23, 42, 0.12);
   --shadow-hover: 0 32px 65px rgba(15, 23, 42, 0.16);
-  --font-sans: "Inter", "SF Pro Display", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-sans:
+    'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -114,7 +120,9 @@ main {
 .nav-links a {
   padding: 0.65rem 0;
   border-bottom: 2px solid transparent;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .nav-links a:hover,
@@ -150,7 +158,10 @@ main {
   color: #ffffff;
   font-weight: 500;
   box-shadow: 0 16px 30px rgba(37, 99, 235, 0.25);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .nav-cta:hover,
@@ -167,7 +178,11 @@ section {
 .hero {
   position: relative;
   padding-top: 140px;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(14, 165, 233, 0.04));
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.08),
+    rgba(14, 165, 233, 0.04)
+  );
 }
 
 .hero-shell {
@@ -231,7 +246,11 @@ section {
   font-weight: 500;
   font-size: 0.98rem;
   border: 1px solid transparent;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .button.primary {
@@ -435,7 +454,9 @@ section {
   padding: 0.45rem 1.1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .queue-action:hover,
@@ -506,7 +527,11 @@ h2 {
 }
 
 .rituals {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(244, 246, 251, 0.85));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.7),
+    rgba(244, 246, 251, 0.85)
+  );
 }
 
 .timeline {
@@ -583,7 +608,14 @@ h2 {
   font-family: inherit;
   color: var(--text);
   background: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-      no-repeat right 1rem center / 12px;
+    no-repeat right 1rem center / 12px;
+}
+
+.role-helper {
+  margin: -1.2rem 0 2.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 60ch;
 }
 
 .role-panel {
@@ -669,7 +701,7 @@ h2 {
 }
 
 .text-button::after {
-  content: "→";
+  content: '→';
   font-size: 1rem;
   transition: transform 0.2s ease;
 }
@@ -680,7 +712,11 @@ h2 {
 }
 
 .access {
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.04), rgba(14, 165, 233, 0.02));
+  background: linear-gradient(
+    180deg,
+    rgba(37, 99, 235, 0.04),
+    rgba(14, 165, 233, 0.02)
+  );
 }
 
 .access-grid {
@@ -799,6 +835,10 @@ h2 {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+  }
+
+  .role-helper {
+    margin: 0 0 2rem 0;
   }
 }
 
@@ -989,7 +1029,10 @@ h2 {
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.78);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .checklist-item:hover,

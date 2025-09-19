@@ -21,6 +21,140 @@ const FOCUS_SIGNAL_TEMPLATE = [
   { label: 'Renewals in 30 days', value: '—', meta: 'Loading' },
 ];
 
+const ROLE_VIEW_TEMPLATE = [
+  {
+    id: 'admin',
+    label: 'Admin',
+    headline: 'Keep the workspace healthy',
+    summary:
+      'Admins maintain automations, integrations, and access so every team works from the same source of truth.',
+    responsibilities: [
+      'Monitor automation runs and resolve sync failures before business hours.',
+      'Audit ERP, HRIS, and SSO connections weekly for accuracy.',
+      'Document configuration changes and communicate to stakeholders.',
+    ],
+    cadence: [
+      'Daily: review the health console for warnings.',
+      'Weekly: align with security on access changes.',
+      'Quarterly: certify retention and archival policies.',
+    ],
+    tools: ['Automation monitor', 'Configuration register', 'Access review'],
+  },
+  {
+    id: 'finance',
+    label: 'Finance',
+    headline: 'Steer spend with live visibility',
+    summary:
+      'Finance ensures budget coverage, forecasts impact, and keeps commitments aligned to plan.',
+    responsibilities: [
+      'Validate cost center and GL coding on new intake.',
+      'Highlight variance risks and partner with budget owners.',
+      'Track committed spend and accruals using the live ledger.',
+    ],
+    cadence: [
+      'Daily: clear approvals that meet guardrails.',
+      'Weekly: reconcile commitments with accounting.',
+      'Monthly: review renewal savings opportunities.',
+    ],
+    tools: ['Commitments ledger', 'Approval console', 'Variance brief'],
+  },
+  {
+    id: 'buyer',
+    label: 'Buyer',
+    headline: 'Move sourcing work forward',
+    summary:
+      'Buyers manage diligence, negotiations, and stakeholder updates with a single shared timeline.',
+    responsibilities: [
+      'Keep request status current with supplier and stakeholder actions.',
+      'Coordinate legal and security deliverables in the dossier.',
+      'Capture performance notes for quarterly business reviews.',
+    ],
+    cadence: [
+      'Daily: update progress and outstanding tasks.',
+      'Weekly: align with finance on leverage and savings.',
+      'Quarterly: refresh preferred supplier recommendations.',
+    ],
+    tools: ['Sourcing workroom', 'Supplier directory', 'Document vault'],
+  },
+  {
+    id: 'approver',
+    label: 'Approver',
+    headline: 'Decide quickly with context',
+    summary:
+      'Approvers receive a concise brief—budget, risk, legal status—so decisions are fast and defensible.',
+    responsibilities: [
+      'Review the approval brief and flag follow-ups inside the record.',
+      'Ensure delegation coverage during travel and quarter-close.',
+      'Log conditions so procurement can operationalise them.',
+    ],
+    cadence: [
+      'Daily: clear pending approvals grouped by priority.',
+      'Weekly: sync with procurement on escalations.',
+      'Quarterly: refresh delegation rules and playbooks.',
+    ],
+    tools: ['Approval brief', 'Policy library', 'Delegation planner'],
+  },
+  {
+    id: 'requester',
+    label: 'Requester',
+    headline: 'Submit and follow with clarity',
+    summary:
+      'Requesters provide business cases, respond to clarifications, and track progress without leaving the workspace.',
+    responsibilities: [
+      'Complete guided intake with supporting documentation and stakeholders.',
+      'Respond promptly to questions from procurement or security.',
+      'Plan renewals early with the reminders and budget coordination tools.',
+    ],
+    cadence: [
+      'As needed: start intake before spend occurs.',
+      'During review: stay active in the request thread.',
+      'Post approval: confirm delivery and capture feedback.',
+    ],
+    tools: ['Guided request', 'Tracking board', 'Renewal planner'],
+  },
+];
+
+function cloneRoleTemplate() {
+  return ROLE_VIEW_TEMPLATE.map((role) => normalizeRoleView(role)).filter(
+    Boolean
+  );
+}
+
+function normalizeRoleView(role) {
+  if (!role) return null;
+  const id = asTrimmedString(role.id) || asTrimmedString(role.role_id);
+  const label = asTrimmedString(role.label);
+  if (!id || !label) return null;
+
+  const headline = asTrimmedString(role.headline) || label;
+  const summary = asTrimmedString(role.summary);
+  const responsibilities = Array.isArray(role.responsibilities)
+    ? role.responsibilities.map(asTrimmedString).filter(Boolean)
+    : [];
+  const cadence = Array.isArray(role.cadence)
+    ? role.cadence.map(asTrimmedString).filter(Boolean)
+    : [];
+  const tools = Array.isArray(role.tools)
+    ? role.tools.map(asTrimmedString).filter(Boolean)
+    : [];
+
+  return {
+    id,
+    label,
+    headline,
+    summary,
+    responsibilities,
+    cadence,
+    tools,
+  };
+}
+
+function asTrimmedString(value) {
+  if (typeof value === 'string') return value.trim();
+  if (value === null || value === undefined) return '';
+  return String(value).trim();
+}
+
 const approvalsQueue = [
   {
     name: 'Marketing automation expansion',
@@ -166,6 +300,7 @@ export default function Landing() {
   const [roleViews, setRoleViews] = useState([]);
   const [selectedRole, setSelectedRole] = useState(null);
   const [landingDataError, setLandingDataError] = useState(false);
+  const [usingFallbackRoles, setUsingFallbackRoles] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -181,7 +316,10 @@ export default function Landing() {
           Array.isArray(data.focusSignals) && data.focusSignals.length
             ? data.focusSignals
             : FOCUS_SIGNAL_TEMPLATE;
-        const roles = Array.isArray(data.roleViews) ? data.roleViews : [];
+        const rolesSource = Array.isArray(data.roleViews) ? data.roleViews : [];
+        const normalizedRoles = rolesSource
+          .map((role) => normalizeRoleView(role))
+          .filter(Boolean);
         setHeroMetrics(
           metrics.map((metric) => ({
             label: metric.label ?? '—',
@@ -195,16 +333,13 @@ export default function Landing() {
             meta: signal.meta ?? '—',
           }))
         );
-        setRoleViews(
-          roles.map((role) => ({
-            ...role,
-            responsibilities: Array.isArray(role.responsibilities)
-              ? role.responsibilities
-              : [],
-            cadence: Array.isArray(role.cadence) ? role.cadence : [],
-            tools: Array.isArray(role.tools) ? role.tools : [],
-          }))
-        );
+        if (normalizedRoles.length) {
+          setRoleViews(normalizedRoles);
+          setUsingFallbackRoles(false);
+        } else {
+          setRoleViews(cloneRoleTemplate());
+          setUsingFallbackRoles(true);
+        }
         setLandingDataError(false);
       } catch (error) {
         if (ignore) return;
@@ -217,7 +352,8 @@ export default function Landing() {
             meta: 'Live data unavailable',
           }))
         );
-        setRoleViews([]);
+        setRoleViews(cloneRoleTemplate());
+        setUsingFallbackRoles(true);
         setLandingDataError(true);
       }
     }
@@ -228,7 +364,14 @@ export default function Landing() {
   }, []);
 
   useEffect(() => {
-    if (!selectedRole && roleViews.length) {
+    if (!roleViews.length) {
+      if (selectedRole !== null) {
+        setSelectedRole(null);
+      }
+      return;
+    }
+    const hasMatch = roleViews.some((role) => role.id === selectedRole);
+    if (!hasMatch) {
       setSelectedRole(roleViews[0].id);
     }
   }, [roleViews, selectedRole]);
@@ -236,6 +379,7 @@ export default function Landing() {
   const activeRole =
     roleViews.find((role) => role.id === selectedRole) ??
     (roleViews.length ? roleViews[0] : null);
+  const roleHelperId = usingFallbackRoles ? 'role-helper-text' : undefined;
 
   return (
     <div className="page">
@@ -423,8 +567,13 @@ export default function Landing() {
                 id="role-select"
                 className="role-select"
                 value={selectedRole ?? ''}
-                onChange={(event) => setSelectedRole(event.target.value)}
+                onChange={(event) =>
+                  setSelectedRole(
+                    event.target.value ? event.target.value : null
+                  )
+                }
                 disabled={!roleViews.length}
+                aria-describedby={roleHelperId}
               >
                 {roleViews.length === 0 ? (
                   <option value="">Live data loading…</option>
@@ -437,12 +586,19 @@ export default function Landing() {
                 )}
               </select>
             </div>
+            {usingFallbackRoles ? (
+              <p className="role-helper" id={roleHelperId} aria-live="polite">
+                {landingDataError
+                  ? "Live workspace data couldn't load, so you're seeing the standard program playbook."
+                  : 'Live workspace data is still syncing—here is the standard program playbook for quick reference.'}
+              </p>
+            ) : null}
             <article className="role-panel" aria-live="polite">
               {activeRole ? (
                 <>
                   <div className="role-header">
                     <h3>{activeRole.headline}</h3>
-                    <p>{activeRole.summary}</p>
+                    {activeRole.summary ? <p>{activeRole.summary}</p> : null}
                   </div>
                   <div className="role-columns">
                     <div className="role-column">
@@ -530,9 +686,8 @@ export default function Landing() {
               <h2 id="access-heading">Get into Procurement Manager</h2>
               <p>
                 A short checklist for teammates joining the workspace. Share
-                this page instead of a long orientation deck, and use the
-                intake readiness checklist to set expectations for
-                requesters.
+                this page instead of a long orientation deck, and use the intake
+                readiness checklist to set expectations for requesters.
               </p>
             </div>
             <div className="access-grid">
