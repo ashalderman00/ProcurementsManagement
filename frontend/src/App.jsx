@@ -2,10 +2,14 @@ import { Outlet, NavLink, useLocation } from "react-router-dom";
 import { LogOut, ShoppingCart, CheckSquare, Settings as Cog, LayoutGrid, LogIn, UserPlus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import ThemeToggle from "./components/ThemeToggle";
+import { useAuth } from "./lib/auth";
 
 export default function App() {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  function logout(){ localStorage.removeItem('token'); localStorage.removeItem('user'); location.href="/login"; }
+  const { user, logout: signOut } = useAuth();
+
+  function handleLogout() {
+    signOut();
+  }
 
   return (
     <div className="min-h-screen gradient-hero text-slate-900 grid md:grid-cols-[240px_1fr]">
@@ -23,7 +27,7 @@ export default function App() {
           {user ? (
             <div className="flex items-center justify-between text-sm">
               <div className="text-slate-600 truncate max-w-[140px]">{user.email}</div>
-              <button onClick={logout} className="inline-flex items-center gap-1 text-slate-700 hover:text-slate-900 press"><LogOut size={16}/> Logout</button>
+              <button onClick={handleLogout} className="inline-flex items-center gap-1 text-slate-700 hover:text-slate-900 press"><LogOut size={16}/> Logout</button>
             </div>
           ) : (
             <div className="flex items-center justify-between text-sm">

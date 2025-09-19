@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import { apiPost } from "../lib/api";
+import { useAuth } from "../lib/auth";
 
 const inputClass =
   "w-full rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-200/50";
@@ -58,6 +59,7 @@ export default function Signup() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setSession } = useAuth();
 
   async function submit(e) {
     e.preventDefault();
@@ -73,8 +75,7 @@ export default function Signup() {
     setLoading(true);
     try {
       const res = await apiPost("/api/auth/signup", { email, password, role: "admin" });
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("user", JSON.stringify(res.user));
+      setSession(res.token, res.user);
       navigate("/app", { replace: true });
     } catch (e) {
       const msg = String(e.message || "").includes("409")
