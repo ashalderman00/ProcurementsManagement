@@ -89,6 +89,10 @@ npm test
 - `npm run format` – Checks formatting for backend and frontend using Prettier.
 - `npm run migrate` – Re-applies database migrations (safe to run after schema changes).
 
+## Guided demo walkthrough
+
+- [docs/demo-walkthrough.md](docs/demo-walkthrough.md) – Step-by-step script that seeds demo data, switches personas, and highlights key workflows so new teammates can explore the product in one session.
+
 ## Troubleshooting tips
 
 - **Database connection errors:** double-check the `DATABASE_URL`, confirm PostgreSQL is listening on the expected host/port, and ensure SSL settings match your environment. Render.com style URLs require SSL; the backend auto-detects this.
