@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
-import { apiPost } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
 const inputClass =
@@ -37,7 +36,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { setSession } = useAuth();
+  const { login: authenticate } = useAuth();
   const redirectTo = location.state?.from || "/app";
 
   async function submit(e) {
@@ -45,8 +44,7 @@ export default function Login() {
     setErr("");
     setLoading(true);
     try {
-      const { token, user } = await apiPost("/api/auth/login", { email, password });
-      setSession(token, user);
+      await authenticate(email, password);
       navigate(redirectTo, { replace: true });
     } catch {
       setErr("Invalid email or password. Please try again.");

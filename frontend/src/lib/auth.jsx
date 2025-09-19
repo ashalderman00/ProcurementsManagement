@@ -1,6 +1,14 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { apiGet } from "./api";
+import { apiGet, apiPost } from "./api";
 
 const AuthContext = createContext(null);
 
@@ -56,9 +64,34 @@ export function AuthProvider({ children }) {
     setSession(null, null);
   }, [setSession]);
 
+  const login = useCallback(
+    async (email, password) => {
+      const { token, user: nextUser } = await apiPost("/api/auth/login", {
+        email,
+        password,
+      });
+      setSession(token, nextUser);
+      return nextUser;
+    },
+    [setSession]
+  );
+
+  const signup = useCallback(
+    async (email, password, role = "requester") => {
+      const { token, user: nextUser } = await apiPost("/api/auth/signup", {
+        email,
+        password,
+        role,
+      });
+      setSession(token, nextUser);
+      return nextUser;
+    },
+    [setSession]
+  );
+
   const value = useMemo(
-    () => ({ user, status, setSession, logout, bootstrap }),
-    [user, status, setSession, logout, bootstrap]
+    () => ({ user, status, setSession, logout, bootstrap, login, signup }),
+    [user, status, setSession, logout, bootstrap, login, signup]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

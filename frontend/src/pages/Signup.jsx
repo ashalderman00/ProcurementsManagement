@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
-import { apiPost } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
 const inputClass =
@@ -59,7 +58,7 @@ export default function Signup() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setSession } = useAuth();
+  const { signup: register } = useAuth();
 
   async function submit(e) {
     e.preventDefault();
@@ -74,8 +73,7 @@ export default function Signup() {
     }
     setLoading(true);
     try {
-      const res = await apiPost("/api/auth/signup", { email, password, role: "admin" });
-      setSession(res.token, res.user);
+      await register(email, password, "admin");
       navigate("/app", { replace: true });
     } catch (e) {
       const msg = String(e.message || "").includes("409")
