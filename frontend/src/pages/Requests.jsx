@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link, Outlet } from "react-router-dom";
 import { apiGet, apiPost, apiPatch, apiUpload } from "../lib/api";
 import { Card, CardBody, CardHeader } from "../components/Card";
 import { T, Th, Td } from "../components/Table";
@@ -110,7 +111,7 @@ export default function Requests() {
                 ))}
                 {!loading && filtered.map(i => (
                   <tr key={i.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
-                    <Td><a className="text-blue-700 underline" href={"/requests/"+i.id}>{i.title}</a></Td>
+                    <Td><Link className="text-blue-700 underline" to={`/app/requests/${i.id}`}>{i.title}</Link></Td>
                     <Td align="right">${Number(i.amount).toFixed(2)}</Td>
                     <Td align="center">{i.category_name || "—"}</Td>
                     <Td align="center"><Badge status={i.status} /></Td>
@@ -161,6 +162,7 @@ export default function Requests() {
           </div>
         </form>
       </Drawer>
+      <Outlet />
     </div>
   );
 }

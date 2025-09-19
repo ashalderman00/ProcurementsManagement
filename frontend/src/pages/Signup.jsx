@@ -18,7 +18,7 @@ export default function Signup() {
       const res = await apiPost("/api/auth/signup", { email, password, role });
       localStorage.setItem('token', res.token);
       localStorage.setItem('user', JSON.stringify(res.user));
-      location.href = "/";
+      location.href = "/app";
     } catch (e) {
       const msg = String(e.message||"").includes("409") ? "Email already in use." : "Sign up failed. Try again.";
       setErr(msg);

@@ -13,7 +13,7 @@ export default function Login() {
       const { token, user } = await apiPost("/api/auth/login", { email, password });
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      location.href = "/";
+      location.href = "/app";
     } catch {
       setErr("Invalid email or password");
     }

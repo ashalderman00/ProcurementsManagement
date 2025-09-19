@@ -38,7 +38,7 @@ export default function Vendors(){
                 {v.website && <a className="text-blue-700 underline text-sm" href={v.website} target="_blank" rel="noreferrer">{v.website}</a>}
                 <div className="mt-3 flex gap-2">
                   <Button variant="ghost" onClick={()=>openVendor(v)}>Open</Button>
-                  <Button variant="ghost" onClick={()=>location.href='/requests?vendor='+v.id}>Create request</Button>
+                  <Button variant="ghost" onClick={()=>location.href='/app/requests?vendor='+v.id}>Create request</Button>
                 </div>
               </div>
             ))}

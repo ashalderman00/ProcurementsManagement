@@ -13,7 +13,7 @@ export default function App() {
       <aside className="hidden md:flex flex-col border-r border-slate-200 bg-white/70 backdrop-blur">
         <div className="px-5 py-4 font-bold tracking-wide border-b border-slate-100">🛒 Procurement</div>
         <nav className="p-3 space-y-1">
-          <Nav to="/" icon={<LayoutGrid size={16}/>}>Dashboard</Nav>
+          <Nav to="/app" icon={<LayoutGrid size={16}/>} end>Dashboard</Nav>
           <Nav to="/app/requests" icon={<ShoppingCart size={16}/>}>Requests</Nav>
           <Nav to="/app/approvals" icon={<CheckSquare size={16}/>}>Approvals</Nav>
           <Nav to="/app/settings" icon={<Cog size={16}/>}>Settings</Nav>
@@ -38,18 +38,18 @@ export default function App() {
       {/* Main */}
       <div className="flex min-h-screen flex-col">
         <header className="md:hidden sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-slate-200">
-  <div className="px-4 py-3 font-bold tracking-wide flex items-center justify-between">
-    <span>🛒 Procurement</span>
-    {user ? (
-      <a className="text-sm text-blue-700" href="/requests">Requests</a>
-    ) : (
-      <div className="flex items-center gap-3 text-sm">
-        <a className="text-blue-700" href="/login">Login</a>
-        <a className="text-slate-700" href="/signup">Sign up</a>
-      </div>
-    )}
-  </div>
-</header>
+          <div className="px-4 py-3 font-bold tracking-wide flex items-center justify-between">
+            <span>🛒 Procurement</span>
+            {user ? (
+              <a className="text-sm text-blue-700" href="/app/requests">Requests</a>
+            ) : (
+              <div className="flex items-center gap-3 text-sm">
+                <a className="text-blue-700" href="/login">Login</a>
+                <a className="text-slate-700" href="/signup">Sign up</a>
+              </div>
+            )}
+          </div>
+        </header>
 
         <AnimatedOutlet />
         <footer className="container py-6 text-xs text-slate-500">
@@ -81,9 +81,18 @@ function AnimatedOutlet() {
 }
 
 function Hero() {
-  const path = location.pathname.replace(/^\//,'') || 'dashboard';
-  const title = path.split('/')[0];
-  const pretty = title.charAt(0).toUpperCase() + title.slice(1);
+  const { pathname } = useLocation();
+  const segments = pathname.replace(/^\/+/,'').split('/');
+  let title = segments[0] || 'dashboard';
+  if (title === 'app') {
+    title = segments[1] || 'dashboard';
+  }
+  if (!title) title = 'dashboard';
+  const pretty = title
+    .split('-')
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ') || 'Dashboard';
   return (
     <div className="bg-white/70 backdrop-blur border border-slate-200 rounded-2xl p-5">
       <div className="text-xs text-slate-500">Home / {pretty}</div>
@@ -92,10 +101,11 @@ function Hero() {
   );
 }
 
-function Nav({ to, icon, children }) {
+function Nav({ to, icon, children, end }) {
   return (
     <NavLink
       to={to}
+      end={end}
       className={({ isActive }) =>
         "flex items-center gap-2 rounded-lg px-3 py-2 text-sm press " +
         (isActive ? "bg-white text-blue-700 font-medium shadow-sm" : "text-slate-700 hover:bg-white/60")
