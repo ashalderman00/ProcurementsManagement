@@ -5,11 +5,60 @@ const RAW_BASE =
   (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE && import.meta.env.VITE_API_BASE.trim()) || "";
 
 // Safe join: handles trailing/leading slashes and avoids double /api/api
+function splitSegments(value) {
+  return String(value || '')
+    .split('/')
+    .filter(Boolean);
+}
+
+function dropOverlap(baseSegments, pathSegments) {
+  if (!baseSegments.length || !pathSegments.length) return pathSegments;
+  const extras = [...pathSegments];
+  const maxOverlap = Math.min(baseSegments.length, extras.length);
+  for (let overlap = maxOverlap; overlap > 0; overlap -= 1) {
+    const baseSlice = baseSegments.slice(baseSegments.length - overlap);
+    const pathSlice = extras.slice(0, overlap);
+    const matches = baseSlice.every((segment, idx) => segment === pathSlice[idx]);
+    if (matches) {
+      return extras.slice(overlap);
+    }
+  }
+  return extras;
+}
+
 function join(base, path) {
-  if (!base) return path; // dev: use relative to Vite proxy
-  const b = base.replace(/\/+$/,'');
-  const p = String(path || '').replace(/^\/+/, '');
-  return `${b}/${p}`;
+  const rawBase = String(base ?? '').trim();
+  if (!rawBase) return String(path ?? ''); // dev: use relative to Vite proxy
+  const rawPath = String(path ?? '');
+
+  const normalizedBase = rawBase.replace(/\/+$/, '');
+  const normalizedPath = rawPath.trim().replace(/^\/+/, '');
+
+  if (!normalizedPath) {
+    if (normalizedBase) return normalizedBase;
+    return rawBase.startsWith('/') ? '/' : '';
+  }
+
+  const pathSegments = splitSegments(normalizedPath);
+
+  try {
+    const baseUrl = new URL(normalizedBase);
+    const baseSegments = splitSegments(baseUrl.pathname);
+    const extras = dropOverlap(baseSegments, pathSegments);
+    const combined = [...baseSegments, ...extras].join('/');
+    const suffix = combined ? `/${combined}` : '';
+    return `${baseUrl.origin}${suffix}`;
+  } catch {
+    const baseSegments = splitSegments(normalizedBase);
+    const extras = dropOverlap(baseSegments, pathSegments);
+    const combinedSegments = [...baseSegments, ...extras];
+    const joined = combinedSegments.join('/');
+    if (!joined) {
+      return rawBase.startsWith('/') ? '/' : normalizedBase;
+    }
+    const leading = rawBase.startsWith('/') ? '/' : '';
+    return leading ? `${leading}${joined}` : joined;
+  }
 }
 
 function authHeader() {
