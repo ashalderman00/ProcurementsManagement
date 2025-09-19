@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { KeyRound, UserPlus } from "lucide-react";
 import AuthLayout from "../components/AuthLayout";
 import { apiPost } from "../lib/api";
 
@@ -29,6 +30,19 @@ const buttonClass = [
   "disabled:opacity-80",
 ].join(" ");
 
+const supportTiles = [
+  {
+    icon: UserPlus,
+    title: "Invite your team",
+    description: "Admins add finance, approver, buyer, and requester roles from Workspace Settings.",
+  },
+  {
+    icon: KeyRound,
+    title: "Need a reset?",
+    description: "Your workspace admin can trigger a password reset in seconds.",
+  },
+];
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,7 +69,7 @@ export default function Login() {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Sign in with your work credentials to pick up intake, approvals, and vendor reviews right where you left off."
+      subtitle="Sign in to keep requests, vendors, and approvals moving."
     >
       <>
         {err ? (
@@ -98,12 +112,23 @@ export default function Login() {
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
-        <div className="space-y-3 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-4 text-sm text-slate-600">
-          <p className="font-medium text-slate-700">Need a hand?</p>
-          <ul className="list-disc space-y-1 pl-4">
-            <li>Admins can invite finance, approver, buyer, and requester teammates from Workspace Settings.</li>
-            <li>If you forgot your password, reach out to your workspace admin to trigger a reset.</li>
-          </ul>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {supportTiles.map(({ icon: Icon, title, description }) => (
+            <div
+              key={title}
+              className="rounded-2xl border border-slate-200/70 bg-slate-50/70 p-4 shadow-sm"
+            >
+              <div className="flex items-start gap-3">
+                <span className="mt-1 rounded-xl bg-white p-2 text-blue-600 shadow-sm">
+                  <Icon size={18} />
+                </span>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-slate-700">{title}</p>
+                  <p className="text-xs leading-relaxed text-slate-500">{description}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
         <p className="text-center text-sm text-slate-500">
           New to Procurement Manager?{" "}

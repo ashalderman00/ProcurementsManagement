@@ -32,19 +32,23 @@ const buttonClass = [
 const workspaceRoles = [
   {
     title: "Finance",
-    description: "Review intake for budget coverage, manage accruals, and steward approvals tied to spend policy.",
+    badge: "💼",
+    description: "Keep budgets, accruals, and approvals aligned.",
   },
   {
     title: "Approver",
-    description: "Give fast, contextual decisions with a complete brief and clear audit trail of conditions.",
+    badge: "✅",
+    description: "Review context-rich requests and sign off fast.",
   },
   {
     title: "Buyer",
-    description: "Coordinate sourcing tasks, vendor diligence, and stakeholder updates from one shared record.",
+    badge: "🛍️",
+    description: "Coordinate sourcing and vendor onboarding in one place.",
   },
   {
     title: "Requester",
-    description: "Submit guided requests, attach business context, and follow progress without chasing updates.",
+    badge: "✉️",
+    description: "Submit needs with guided intake and live status checks.",
   },
 ];
 
@@ -85,7 +89,7 @@ export default function Signup() {
   return (
     <AuthLayout
       title="Create your workspace"
-      subtitle="You're creating the administrator account that will configure Procurement Manager for your organisation."
+      subtitle="You're creating the admin workspace owner account. Invite your team after setup."
     >
       <>
         {err ? (
@@ -93,12 +97,15 @@ export default function Signup() {
             {err}
           </div>
         ) : null}
-        <form onSubmit={submit} className="space-y-5">
-          <div className="rounded-2xl border border-blue-200/80 bg-blue-50/80 px-4 py-4 text-sm text-blue-700">
-            <p className="font-medium">This sign-up is for workspace admins.</p>
-            <p className="mt-2 text-blue-800/80">
-              Once inside, you can invite finance, approver, buyer, and requester teammates so they have the right access levels.
-            </p>
+        <form onSubmit={submit} className="space-y-6">
+          <div className="flex items-start gap-3 rounded-2xl border border-blue-200/80 bg-blue-50/80 p-4 text-sm text-blue-800">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-lg shadow-sm">⭐</span>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-blue-900">Administrator sign-up</p>
+              <p className="text-xs leading-relaxed text-blue-700/80">
+                You'll invite finance, approver, buyer, and requester teammates once you're inside the workspace.
+              </p>
+            </div>
           </div>
           <div className="space-y-1.5">
             <label htmlFor="email" className={labelClass}>
@@ -134,19 +141,26 @@ export default function Signup() {
             {loading ? "Creating account…" : "Create account"}
           </button>
         </form>
-        <div className="space-y-4 rounded-[28px] border border-slate-200/70 bg-white/70 px-5 py-6 text-sm text-slate-600 shadow-sm">
-          <p className="text-slate-700">
-            After you finish onboarding, use the Roles & Access section to add specialised teammates.
-          </p>
+        <section className="space-y-4 rounded-[28px] border border-slate-200/70 bg-white/80 px-5 py-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-slate-700">Roles you'll add next</p>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">Workspace</span>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            {workspaceRoles.map(({ title, description }) => (
-              <div key={title} className="rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-3">
-                <p className="text-sm font-semibold text-slate-700">{title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-500">{description}</p>
+            {workspaceRoles.map(({ title, description, badge }) => (
+              <div
+                key={title}
+                className="flex items-start gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/70 p-4"
+              >
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-lg shadow-sm">{badge}</span>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-slate-700">{title}</p>
+                  <p className="text-xs leading-relaxed text-slate-500">{description}</p>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        </section>
         <p className="text-center text-sm text-slate-500">
           Already using Procurement Manager?{" "}
           <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
