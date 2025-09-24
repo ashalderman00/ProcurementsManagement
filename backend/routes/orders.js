@@ -101,7 +101,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+async function updateOrder(req, res) {
   try {
     const id = Number(req.params.id);
     if (Number.isNaN(id)) {
@@ -185,8 +185,7 @@ router.put('/:id', async (req, res) => {
     }
 
     if (notes !== undefined) {
-      updates.notes =
-        notes === null ? null : String(notes).trim() || null;
+      updates.notes = notes === null ? null : String(notes).trim() || null;
     }
 
     const updated = await Orders.update(id, updates);
@@ -199,7 +198,10 @@ router.put('/:id', async (req, res) => {
     console.error('orders.update.error', err);
     res.status(500).json({ error: 'Failed to update order' });
   }
-});
+}
+
+router.put('/:id', updateOrder);
+router.patch('/:id', updateOrder);
 
 router.delete('/:id', async (req, res) => {
   try {
