@@ -65,58 +65,16 @@ const WORKSPACE_STREAMS = [
   {
     title: 'Intake triage',
     summary: 'Convert submissions into clear, actionable requests.',
-    checklist: [
-      {
-        label: 'Open the Requests list and filter to Pending items.',
-        href: '/app/requests',
-      },
-      {
-        label: 'Assign owners in the request thread and capture open questions.',
-        href: '/app/requests',
-      },
-      {
-        label: 'Share the intake checklist with requesters before they submit.',
-        href: '/resources/intake-checklist',
-      },
-    ],
     action: { label: 'Go to intake queue', href: '/app/requests' },
   },
   {
     title: 'Approval execution',
     summary: 'Keep decision-makers unblocked and document the outcome.',
-    checklist: [
-      {
-        label: 'Review approvals that need attention today.',
-        href: '/app/approvals',
-      },
-      {
-        label: 'Leave policy notes or escalation context on the request.',
-        href: '/app/requests',
-      },
-      {
-        label: 'Confirm delegation rules in Settings before out-of-office coverage.',
-        href: '/app/settings',
-      },
-    ],
     action: { label: 'Open approvals workspace', href: '/app/approvals' },
   },
   {
     title: 'Supplier lifecycle',
     summary: 'Track renewals, diligence, and active work orders.',
-    checklist: [
-      {
-        label: 'Review vendor dossiers and upload renewal paperwork.',
-        href: '/app/vendors',
-      },
-      {
-        label: 'Check purchase orders tied to the vendor for delivery updates.',
-        href: '/app/purchase-orders',
-      },
-      {
-        label: 'Log scorecard notes so quarterly business reviews stay current.',
-        href: '/app/vendors',
-      },
-    ],
     action: { label: 'Open Vendors workspace', href: '/app/vendors' },
   },
 ];
@@ -586,19 +544,6 @@ export default function Landing() {
                 <article className="program-card" key={stream.title}>
                   <h3>{stream.title}</h3>
                   <p>{stream.summary}</p>
-                  <ul>
-                    {stream.checklist.map((item) => (
-                      <li key={item.label}>
-                        {item.href ? (
-                          <a className="text-link" href={item.href}>
-                            {item.label}
-                          </a>
-                        ) : (
-                          item.label
-                        )}
-                      </li>
-                    ))}
-                  </ul>
                   {stream.action ? (
                     <a className="text-link" href={stream.action.href}>
                       {stream.action.label}
