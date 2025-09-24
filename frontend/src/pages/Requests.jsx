@@ -19,7 +19,6 @@ export default function Requests() {
   // filters
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
-  const chips = ["all","approved","pending","denied"];
 
   // drawer state
   const [open, setOpen] = useState(false);
@@ -32,10 +31,102 @@ export default function Requests() {
     setLoading(true);
     try {
       const [data, c] = await Promise.all([apiGet("/api/requests"), apiGet("/api/categories")]);
-      setItems(data); setCats(c);
+      setItems(data);
+      setCats(c);
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, []);
+
+  const requestMetrics = useMemo(() => {
+    const statusCounts = { approved: 0, pending: 0, denied: 0 };
+    let totalAmount = 0;
+    let lastCreatedAt = null;
+
+    for (const item of items) {
+      const amt = Number(item.amount);
+      if (!Number.isNaN(amt)) totalAmount += amt;
+
+      const key = (item.status || "").toLowerCase();
+      if (key in statusCounts) statusCounts[key] += 1;
+
+      if (item.created_at) {
+        const ts = new Date(item.created_at).getTime();
+        if (!Number.isNaN(ts)) {
+          if (lastCreatedAt === null || ts > lastCreatedAt) lastCreatedAt = ts;
+        }
+      }
+    }
+
+    const total = items.length;
+    const averageAmount = total ? totalAmount / total : 0;
+    const approvalRate = total ? Math.round((statusCounts.approved / total) * 100) : 0;
+
+    return {
+      total,
+      statusCounts,
+      totalAmount,
+      averageAmount,
+      approvalRate,
+      lastCreatedAt,
+    };
+  }, [items]);
+
+  const chips = useMemo(() => ([
+    { key: "all", label: "All", count: requestMetrics.total },
+    { key: "approved", label: "Approved", count: requestMetrics.statusCounts.approved },
+    { key: "pending", label: "Pending", count: requestMetrics.statusCounts.pending },
+    { key: "denied", label: "Denied", count: requestMetrics.statusCounts.denied },
+  ]), [requestMetrics]);
+
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }), []);
+
+  const formatAmount = (value) => {
+    const amount = Number(value);
+    return Number.isNaN(amount) ? "—" : currencyFormatter.format(amount);
+  };
+
+  const lastSubmittedLabel = useMemo(() => {
+    if (!requestMetrics.lastCreatedAt) return null;
+    return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(
+      new Date(requestMetrics.lastCreatedAt),
+    );
+  }, [requestMetrics.lastCreatedAt]);
+
+  const summaryCards = useMemo(() => ([
+    {
+      title: "Total requests",
+      value: requestMetrics.total.toLocaleString(),
+      helper: requestMetrics.total
+        ? `Avg request ${currencyFormatter.format(requestMetrics.averageAmount)}`
+        : "Create your first request to get started",
+    },
+    {
+      title: "Pending approvals",
+      value: requestMetrics.statusCounts.pending.toLocaleString(),
+      helper: requestMetrics.statusCounts.pending
+        ? "Follow up with approvers to keep momentum"
+        : "All pending items are cleared",
+    },
+    {
+      title: "Approved",
+      value: requestMetrics.statusCounts.approved.toLocaleString(),
+      helper: requestMetrics.total
+        ? `${requestMetrics.approvalRate}% approval rate`
+        : "Approval rate will appear once requests arrive",
+    },
+    {
+      title: "Requested spend",
+      value: currencyFormatter.format(requestMetrics.totalAmount),
+      helper: lastSubmittedLabel
+        ? `Latest submission on ${lastSubmittedLabel}`
+        : "Attach quotes to strengthen business cases",
+    },
+  ]), [currencyFormatter, lastSubmittedLabel, requestMetrics]);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -56,10 +147,21 @@ export default function Requests() {
         title, amount: Number(amount), category_id: categoryId ? Number(categoryId) : null
       });
       if (file) await apiUpload("/api/requests/"+created.id+"/files", file);
-      setItems([created, ...items]);
+      const category = cats.find(c => Number(c.id) === Number(categoryId));
+      const normalized = {
+        ...created,
+        status: (created.status || "pending"),
+        category_name: created.category_name || category?.name || null,
+      };
+      setItems(prev => [normalized, ...prev]);
       setTitle(""); setAmount(""); setCategoryId(""); setFile(null); setOpen(false);
       toast.success("Request created");
     } catch { toast.error("Create failed"); }
+  }
+
+  function clearFilters() {
+    setStatus("all");
+    setQ("");
   }
 
   async function setStage(id, next) {
@@ -79,19 +181,59 @@ export default function Requests() {
     <div className="space-y-4">
       {/* sticky subheader */}
       <div className="sticky top-3 z-10 glass border border-slate-200 rounded-2xl p-3">
-        <div className="flex flex-col md:flex-row md:items-center gap-3">
-          <div className="flex gap-2">
-            {chips.map(c => <Chip key={c} active={status===c} onClick={()=>setStatus(c)}>{c[0].toUpperCase()+c.slice(1)}</Chip>)}
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="flex flex-wrap gap-2">
+            {chips.map(chip => (
+              <Chip
+                key={chip.key}
+                active={status===chip.key}
+                onClick={()=>setStatus(chip.key)}
+              >
+                <span className="flex items-center gap-2">
+                  {chip.label}
+                  <span className={status===chip.key ? "text-blue-100/90" : "text-slate-400"}>
+                    {chip.count.toLocaleString()}
+                  </span>
+                </span>
+              </Chip>
+            ))}
           </div>
-          <div className="md:ml-auto">
-            <input className="rounded-lg border px-3 py-2 text-sm w-64" placeholder="Search title, amount, category…" value={q} onChange={e=>setQ(e.target.value)} />
+          <div className="flex flex-col gap-2 md:ml-auto md:flex-row md:items-center">
+            <input
+              className="w-full rounded-lg border px-3 py-2 text-sm md:w-64"
+              placeholder="Search title, amount, category…"
+              value={q}
+              onChange={e=>setQ(e.target.value)}
+            />
+            {(q || status!=="all") && (
+              <Button variant="ghost" className="whitespace-nowrap" onClick={clearFilters}>
+                Clear filters
+              </Button>
+            )}
+            <Button className="whitespace-nowrap" onClick={()=>setOpen(true)}>New request</Button>
           </div>
-          <Button className="md:ml-2" onClick={()=>setOpen(true)}>New request</Button>
         </div>
       </div>
 
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {summaryCards.map(card => (
+          <div key={card.title} className="glass rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{card.title}</div>
+            <div className="mt-2 text-2xl font-semibold text-slate-900">{card.value}</div>
+            {card.helper && <div className="mt-2 text-xs text-slate-500">{card.helper}</div>}
+          </div>
+        ))}
+      </div>
+
       <Card>
-        <CardHeader title="Requests" subtitle="Track status and manage approvals" />
+        <CardHeader
+          title="Requests"
+          subtitle={loading
+            ? "Loading requests…"
+            : items.length
+              ? `${filtered.length.toLocaleString()} of ${items.length.toLocaleString()} requests shown`
+              : "No requests yet — start by creating one"}
+        />
         <CardBody className="p-0">
           <div className="overflow-x-auto rounded-2xl">
             <T>
@@ -117,7 +259,7 @@ export default function Requests() {
                 {!loading && filtered.map(i => (
                   <tr key={i.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
                     <Td><Link className="text-blue-700 underline" to={`/app/requests/${i.id}`}>{i.title}</Link></Td>
-                    <Td align="right">${Number(i.amount).toFixed(2)}</Td>
+                    <Td align="right">{formatAmount(i.amount)}</Td>
                     <Td align="center">{i.category_name || "—"}</Td>
                     <Td align="center"><Badge status={i.status} /></Td>
                     <Td>
@@ -129,7 +271,16 @@ export default function Requests() {
                   </tr>
                 ))}
                 {!loading && !filtered.length && (
-                  <tr><Td colSpan="5" className="text-slate-500">No matching requests — try clearing filters or create the first one.</Td></tr>
+                  <tr>
+                    <Td colSpan="5" align="center" className="py-8 text-slate-500">
+                      <div className="space-y-2">
+                        <div>No matching requests found.</div>
+                        {(q || status!=="all") && (
+                          <Button variant="ghost" onClick={clearFilters}>Reset filters</Button>
+                        )}
+                      </div>
+                    </Td>
+                  </tr>
                 )}
               </tbody>
             </T>
