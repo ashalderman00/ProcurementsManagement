@@ -352,17 +352,7 @@ export default function Landing() {
     roleViews.find((role) => role.id === selectedRole) ?? (roleViews.length ? roleViews[0] : null);
   const roleHelperId = usingFallbackRoles ? 'role-helper-text' : undefined;
   const heroNoticeId = landingDataError || usingFallbackMetrics ? 'hero-metric-helper' : undefined;
-  const heroFocusHelperId = usingFallbackSignals ? 'hero-focus-helper' : undefined;
   const focusGridHelperId = usingFallbackSignals ? 'focus-grid-helper' : undefined;
-
-  const todayLabel = useMemo(
-    () =>
-      new Intl.DateTimeFormat(undefined, {
-        month: 'short',
-        day: 'numeric',
-      }).format(new Date()),
-    []
-  );
 
   const focusActions = useMemo(() => {
     return FOCUS_ACTION_CONFIG.map((config) => {
@@ -468,35 +458,6 @@ export default function Landing() {
                     Submit work order
                   </a>
                 </div>
-              </div>
-              <div className="hero-pane">
-                <article className="brief-card">
-                  <header className="brief-header">
-                    <div>
-                      <span className="brief-title">Today's checkpoints</span>
-                      <span className="brief-date">{todayLabel}</span>
-                    </div>
-                  </header>
-                  <ul className="brief-list" aria-describedby={heroFocusHelperId}>
-                    {focusActions.map((action) => (
-                      <li className="brief-item" key={action.id}>
-                        <div className="brief-item-header">
-                          <span className="brief-label">{action.title}</span>
-                          <span className="brief-value">{action.value}</span>
-                        </div>
-                        {action.meta ? <span className="brief-meta">{action.meta}</span> : null}
-                        <a className="text-link" href={action.href}>
-                          {action.actionLabel}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="brief-foot" aria-live="polite" id={heroFocusHelperId}>
-                    {usingFallbackSignals
-                      ? 'Workspace data is still syncing—start with the queues linked here.'
-                      : 'Jump into the queues linked here to keep work moving forward.'}
-                  </p>
-                </article>
               </div>
             </div>
             {!usingFallbackMetrics ? (
