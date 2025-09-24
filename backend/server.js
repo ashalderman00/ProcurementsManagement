@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -25,6 +26,8 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+const ALLOWED_ROLES = ['requester', 'approver', 'buyer', 'finance', 'admin'];
+const ALLOWED_ROLE_SET = new Set(ALLOWED_ROLES);
 
 app.use((req, _res, next) => {
   console.log(`[API] ${req.method} ${req.url}`);
@@ -84,6 +87,35 @@ function normalizeOrderDate(input) {
 }
 
 // ===== auth helpers =====
+function normalizeEmail(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
+
+function normalizeRole(value, fallback = 'requester') {
+  const role = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return ALLOWED_ROLE_SET.has(role) ? role : fallback;
+}
+
+const PASSWORD_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+function generatePassword(length = 12) {
+  const result = [];
+  const charsetLength = PASSWORD_CHARS.length;
+  if (!charsetLength) return 'changeme123';
+  while (result.length < length) {
+    const buf = crypto.randomBytes(length);
+    for (let i = 0; i < buf.length && result.length < length; i += 1) {
+      const byte = buf[i];
+      const max = charsetLength * Math.floor(256 / charsetLength);
+      if (byte < max) {
+        result.push(PASSWORD_CHARS[byte % charsetLength]);
+      }
+    }
+  }
+  return result.join('');
+}
+
 function signToken(user) {
   return jwt.sign(
     { id: user.id, email: user.email, role: user.role },
@@ -113,17 +145,16 @@ function roleRequired(...roles) {
 app.post('/api/auth/signup', async (req, res) => {
   try {
     const { email, password, role } = req.body || {};
-    if (!email || !password)
+    const identifier = normalizeEmail(email);
+    if (!identifier || !password)
       return res.status(400).json({ error: 'email and password required' });
-    const hash = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(String(password), 10);
     const r = await pool.query(
       'INSERT INTO users(email,password_hash,role) VALUES($1,$2,$3) RETURNING id,email,role',
       [
-        String(email).toLowerCase(),
+        identifier,
         hash,
-        role && ['requester', 'approver', 'admin'].includes(role)
-          ? role
-          : 'requester',
+        normalizeRole(role),
       ]
     );
     const user = r.rows[0];
@@ -138,8 +169,11 @@ app.post('/api/auth/signup', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body || {};
+    const identifier = normalizeEmail(email);
+    if (!identifier || !password)
+      return res.status(400).json({ error: 'email and password required' });
     const r = await pool.query('SELECT * FROM users WHERE email=$1', [
-      String(email).toLowerCase(),
+      identifier,
     ]);
     if (!r.rows.length)
       return res.status(401).json({ error: 'invalid credentials' });
@@ -159,6 +193,50 @@ app.get('/api/me', authRequired, (req, res) =>
     user: { id: req.user.id, email: req.user.email, role: req.user.role },
   })
 );
+
+app.get('/api/users', authRequired, roleRequired('admin'), async (_req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id,email,role,created_at FROM users ORDER BY created_at DESC, email ASC'
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error('users.list.error', error);
+    res.status(500).json({ error: 'failed to load users' });
+  }
+});
+
+app.post('/api/users', authRequired, roleRequired('admin'), async (req, res) => {
+  try {
+    const { email, role, password } = req.body || {};
+    const identifier = normalizeEmail(email);
+    if (!identifier)
+      return res.status(400).json({ error: 'valid email is required' });
+
+    let rawPassword = typeof password === 'string' ? password.trim() : '';
+    let temporaryPassword = null;
+    if (!rawPassword) {
+      temporaryPassword = generatePassword(12);
+      rawPassword = temporaryPassword;
+    }
+
+    const hash = await bcrypt.hash(rawPassword, 10);
+    const normalizedRole = normalizeRole(role);
+
+    const { rows } = await pool.query(
+      'INSERT INTO users(email,password_hash,role) VALUES($1,$2,$3) RETURNING id,email,role,created_at',
+      [identifier, hash, normalizedRole]
+    );
+    const user = rows[0];
+    res.status(201).json({ user, temporaryPassword });
+  } catch (error) {
+    if (String(error.message || '').includes('duplicate')) {
+      return res.status(409).json({ error: 'email taken' });
+    }
+    console.error('users.create.error', error);
+    res.status(500).json({ error: 'failed to create user' });
+  }
+});
 
 // ===== health =====
 app.get('/api/health', async (_req, res) => {
@@ -329,7 +407,7 @@ app.get('/api/vendors', async (_req, res) => {
 app.post(
   '/api/vendors',
   authRequired,
-  roleRequired('admin'),
+  roleRequired('admin', 'buyer'),
   async (req, res) => {
     const {
       name,
@@ -358,7 +436,7 @@ app.get('/api/vendors/:id', async (req, res) => {
 app.patch(
   '/api/vendors/:id',
   authRequired,
-  roleRequired('admin'),
+  roleRequired('admin', 'buyer'),
   async (req, res) => {
     const id = Number.parseInt(req.params.id, 10);
     if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid vendor id' });
@@ -909,7 +987,7 @@ app.get('/api/orders/:id', async (req, res) => {
 app.post(
   '/api/orders',
   authRequired,
-  roleRequired('admin', 'approver'),
+  roleRequired('admin', 'approver', 'buyer', 'finance'),
   async (req, res) => {
     try {
       const body = req.body || {};
@@ -998,7 +1076,7 @@ app.post(
 app.patch(
   '/api/orders/:id',
   authRequired,
-  roleRequired('admin', 'approver'),
+  roleRequired('admin', 'approver', 'buyer', 'finance'),
   async (req, res) => {
     const orderId = Number.parseInt(req.params.id, 10);
     if (Number.isNaN(orderId)) {
@@ -1112,7 +1190,7 @@ app.patch(
 app.delete(
   '/api/orders/:id',
   authRequired,
-  roleRequired('admin', 'approver'),
+  roleRequired('admin', 'approver', 'buyer', 'finance'),
   async (req, res) => {
     const orderId = Number.parseInt(req.params.id, 10);
     if (Number.isNaN(orderId)) {
