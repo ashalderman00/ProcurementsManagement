@@ -6,6 +6,7 @@ const navLinks = [
   { label: 'Focus', href: '#focus' },
   { label: 'Work orders', href: '#work-order' },
   { label: 'Roles', href: '#roles' },
+  { label: 'Try it', href: '#demo-access' },
   { label: 'Access', href: '#access' },
 ];
 
@@ -33,33 +34,90 @@ const FOCUS_TEMPLATE = [
   },
 ];
 
+const FOCUS_ACTION_CONFIG = [
+  {
+    id: 'intake',
+    sourceLabel: 'New intake',
+    title: 'Review new intake',
+    actionLabel: 'Open Requests list',
+    href: '/app/requests',
+    helper: 'Filter to Pending to triage submissions waiting on Procurement.',
+  },
+  {
+    id: 'approvals',
+    sourceLabel: 'Approvals today',
+    title: "Clear today's approvals",
+    actionLabel: 'Open Approvals queue',
+    href: '/app/approvals',
+    helper: 'Route items, leave decisions, and @mention owners for follow-ups.',
+  },
+  {
+    id: 'renewals',
+    sourceLabel: 'Renewals in 30 days',
+    title: 'Prepare renewals',
+    actionLabel: 'Open Vendors view',
+    href: '/app/vendors',
+    helper: 'Confirm renewal owners and upload paperwork before reminders go out.',
+  },
+];
+
 const WORKSPACE_STREAMS = [
   {
     title: 'Intake triage',
-    summary: 'Keep new submissions moving by clarifying scope and assigning owners.',
-    points: [
-      'Review the intake queue and respond to questions from requesters.',
-      'Surface preferred suppliers or pricing to reduce turnaround time.',
-      'Export the pipeline to share demand levels with stakeholders.',
+    summary: 'Convert submissions into clear, actionable requests.',
+    checklist: [
+      {
+        label: 'Open the Requests list and filter to Pending items.',
+        href: '/app/requests',
+      },
+      {
+        label: 'Assign owners in the request thread and capture open questions.',
+        href: '/app/requests',
+      },
+      {
+        label: 'Share the intake checklist with requesters before they submit.',
+        href: '/resources/intake-checklist',
+      },
     ],
+    action: { label: 'Go to intake queue', href: '/app/requests' },
   },
   {
     title: 'Approval execution',
-    summary: 'Track pending approvals and document policy decisions in-line.',
-    points: [
-      'Use the approval brief to confirm budget, risk, and contract context.',
-      'Log comments or conditions directly in the request thread.',
-      'Notify owners when a stage is blocked or requires escalation.',
+    summary: 'Keep decision-makers unblocked and document the outcome.',
+    checklist: [
+      {
+        label: 'Review approvals that need attention today.',
+        href: '/app/approvals',
+      },
+      {
+        label: 'Leave policy notes or escalation context on the request.',
+        href: '/app/requests',
+      },
+      {
+        label: 'Confirm delegation rules in Settings before out-of-office coverage.',
+        href: '/app/settings',
+      },
     ],
+    action: { label: 'Open approvals workspace', href: '/app/approvals' },
   },
   {
     title: 'Supplier lifecycle',
-    summary: 'Manage work orders, contracts, and scorecards from each vendor record.',
-    points: [
-      'Attach contracts and security responses to the vendor dossier.',
-      'Assign renewal owners and confirm reminders are in place.',
-      'Record fulfilment notes so quarterly reviews stay accurate.',
+    summary: 'Track renewals, diligence, and active work orders.',
+    checklist: [
+      {
+        label: 'Review vendor dossiers and upload renewal paperwork.',
+        href: '/app/vendors',
+      },
+      {
+        label: 'Check purchase orders tied to the vendor for delivery updates.',
+        href: '/app/purchase-orders',
+      },
+      {
+        label: 'Log scorecard notes so quarterly business reviews stay current.',
+        href: '/app/vendors',
+      },
     ],
+    action: { label: 'Open Vendors workspace', href: '/app/vendors' },
   },
 ];
 
@@ -78,16 +136,20 @@ const ROLE_VIEW_TEMPLATE = [
     summary:
       'Admins review integrations, automation runs, and access changes so the workspace stays reliable.',
     responsibilities: [
-      'Resolve automation or sync failures before the business day begins.',
-      'Audit ERP, HRIS, and SSO connections for drift or stale mappings.',
-      'Document configuration changes and share updates with stakeholders.',
+      'Check Integration health for failed syncs or stale PunchOut credentials.',
+      'Approve or revoke workspace access in Settings > Members.',
+      'Document configuration updates so downstream teams know what changed.',
     ],
     cadence: [
-      'Daily: clear automation warnings and confirm backups.',
+      'Daily: clear automation warnings in Integrations.',
       'Weekly: align with security on access adjustments.',
-      'Quarterly: certify retention and archival policies.',
+      'Quarterly: export settings for audit and retention sign-off.',
     ],
-    tools: ['Automation monitor', 'Configuration register', 'Access review'],
+    tools: [
+      { label: 'Integrations', href: '/app/integrations' },
+      { label: 'Workspace settings', href: '/app/settings' },
+      { label: 'Access log (Reports)', href: '/app/settings' },
+    ],
   },
   {
     id: 'finance',
@@ -96,16 +158,20 @@ const ROLE_VIEW_TEMPLATE = [
     summary:
       'Finance partners validate budgets, track commitments, and surface savings opportunities.',
     responsibilities: [
-      'Validate cost centre and GL coding on each submission.',
-      'Review variance drivers with budget owners and update forecasts.',
-      'Track committed spend and accruals from the live ledger.',
+      'Review dashboard KPIs before business reviews or forecast updates.',
+      'Approve requisitions with budget impact in the Approvals queue.',
+      'Match purchase orders to delivery confirmations before closing the month.',
     ],
     cadence: [
       'Daily: clear approvals that meet policy guardrails.',
       'Weekly: reconcile commitments against accounting.',
       'Monthly: review renewal savings opportunities.',
     ],
-    tools: ['Commitments ledger', 'Approval console', 'Variance brief'],
+    tools: [
+      { label: 'Dashboard', href: '/app' },
+      { label: 'Approvals', href: '/app/approvals' },
+      { label: 'Purchase orders', href: '/app/purchase-orders' },
+    ],
   },
   {
     id: 'buyer',
@@ -115,15 +181,19 @@ const ROLE_VIEW_TEMPLATE = [
       'Buyers coordinate diligence, negotiations, and vendor updates from a shared workspace.',
     responsibilities: [
       'Keep request status current with supplier and stakeholder actions.',
-      'Coordinate legal, security, and data reviews in the dossier.',
-      'Capture performance notes for supplier business reviews.',
+      'Upload vendor diligence and contract drafts to the request record.',
+      'Refresh catalogue items so requesters see the latest pricing.',
     ],
     cadence: [
       'Daily: update progress and outstanding tasks.',
       'Weekly: sync with finance on leverage and savings.',
       'Quarterly: refresh preferred supplier recommendations.',
     ],
-    tools: ['Sourcing workroom', 'Supplier directory', 'Document vault'],
+    tools: [
+      { label: 'Requests pipeline', href: '/app/requests' },
+      { label: 'Catalogue', href: '/app/catalog' },
+      { label: 'Vendors', href: '/app/vendors' },
+    ],
   },
   {
     id: 'approver',
@@ -132,16 +202,20 @@ const ROLE_VIEW_TEMPLATE = [
     summary:
       'Approvers use concise briefs—budget, risk, legal status—to make decisions fast and transparently.',
     responsibilities: [
-      'Review the approval brief and flag follow-ups inside the record.',
-      'Ensure delegation coverage before travel or quarter-close.',
-      'Log conditions for procurement to operationalise.',
+      'Work from the Approvals queue sorted by priority.',
+      'Review request attachments and policy checks before deciding.',
+      'Record conditions or deferrals directly in the request conversation.',
     ],
     cadence: [
       'Daily: clear pending approvals grouped by priority.',
       'Weekly: sync with procurement on escalations.',
       'Quarterly: refresh delegation rules and playbooks.',
     ],
-    tools: ['Approval brief', 'Policy library', 'Delegation planner'],
+    tools: [
+      { label: 'Approvals queue', href: '/app/approvals' },
+      { label: 'Request detail view', href: '/app/requests' },
+      { label: 'Delegation rules', href: '/app/settings' },
+    ],
   },
   {
     id: 'requester',
@@ -150,16 +224,20 @@ const ROLE_VIEW_TEMPLATE = [
     summary:
       'Requesters provide context, attach documentation, and monitor progress without extra follow-up.',
     responsibilities: [
-      'Complete guided intake with supporting documents and stakeholders.',
-      'Respond quickly to questions from procurement or security.',
-      'Plan renewals early with reminders and budget coordination tools.',
+      'Start with the intake checklist before creating a request.',
+      'Upload quotes, contracts, and approvals so reviewers have everything in one place.',
+      'Watch for notifications and respond quickly when Procurement follows up.',
     ],
     cadence: [
       'Before spend: start intake and confirm budgets.',
       'During review: stay active in the request thread.',
       'Post approval: confirm delivery and share feedback.',
     ],
-    tools: ['Guided request', 'Tracking board', 'Renewal planner'],
+    tools: [
+      { label: 'Intake checklist', href: '/resources/intake-checklist' },
+      { label: 'Create request', href: '/app/requests' },
+      { label: 'Track approvals', href: '/app/approvals' },
+    ],
   },
 ];
 
@@ -182,7 +260,7 @@ function normalizeRoleView(role) {
     ? role.cadence.map(asTrimmedString).filter(Boolean)
     : [];
   const tools = Array.isArray(role.tools)
-    ? role.tools.map(asTrimmedString).filter(Boolean)
+    ? role.tools.map((tool) => normalizeRoleTool(tool)).filter(Boolean)
     : [];
 
   return {
@@ -200,6 +278,22 @@ function asTrimmedString(value) {
   if (typeof value === 'string') return value.trim();
   if (value === null || value === undefined) return '';
   return String(value).trim();
+}
+
+function normalizeRoleTool(tool) {
+  if (!tool) return null;
+  if (typeof tool === 'string') {
+    const label = asTrimmedString(tool);
+    return label ? { label, href: null, description: null } : null;
+  }
+  if (typeof tool === 'object') {
+    const label = asTrimmedString(tool.label || tool.name);
+    if (!label) return null;
+    const href = asTrimmedString(tool.href || tool.url || '');
+    const description = asTrimmedString(tool.description || tool.helper || '');
+    return { label, href: href || null, description: description || null };
+  }
+  return null;
 }
 
 const initialWorkOrderState = {
@@ -312,6 +406,17 @@ export default function Landing() {
     []
   );
 
+  const focusActions = useMemo(() => {
+    return FOCUS_ACTION_CONFIG.map((config) => {
+      const source = focusSignals.find((signal) => signal.label === config.sourceLabel);
+      return {
+        ...config,
+        value: source ? source.value : '—',
+        meta: source ? source.meta : '',
+      };
+    });
+  }, [focusSignals]);
+
   const workOrderIsValid = useMemo(() => {
     return (
       workOrderForm.title.trim() &&
@@ -398,6 +503,9 @@ export default function Landing() {
                   <a className="button primary" href="/app">
                     Open workspace
                   </a>
+                  <a className="button outline" href="#demo-access">
+                    View sample workspace
+                  </a>
                   <a className="button outline" href="#work-order">
                     Submit work order
                   </a>
@@ -412,35 +520,55 @@ export default function Landing() {
                     </div>
                   </header>
                   <ul className="brief-list" aria-describedby={heroFocusHelperId}>
-                    {focusSignals.slice(0, 3).map((signal) => (
-                      <li className="brief-item" key={signal.label}>
-                        <span className="brief-label">{signal.label}</span>
-                        <span className="brief-value">{signal.value}</span>
-                        {signal.meta ? <span className="brief-meta">{signal.meta}</span> : null}
+                    {focusActions.map((action) => (
+                      <li className="brief-item" key={action.id}>
+                        <div className="brief-item-header">
+                          <span className="brief-label">{action.title}</span>
+                          <span className="brief-value">{action.value}</span>
+                        </div>
+                        {action.meta ? <span className="brief-meta">{action.meta}</span> : null}
+                        <a className="text-link" href={action.href}>
+                          {action.actionLabel}
+                        </a>
                       </li>
                     ))}
                   </ul>
                   <p className="brief-foot" aria-live="polite" id={heroFocusHelperId}>
                     {usingFallbackSignals
-                      ? 'Live focus signals will appear once workspace data syncs.'
-                      : 'Use the focus queue to keep work moving forward.'}
+                      ? 'Workspace data is still syncing—start with the queues linked here.'
+                      : 'Jump into the queues linked here to keep work moving forward.'}
                   </p>
                 </article>
               </div>
             </div>
-            <dl className="hero-metrics" aria-live="polite" aria-describedby={heroNoticeId}>
-              {heroMetrics.map((metric) => (
-                <div className="metric" key={metric.label}>
-                  <dt>{metric.value}</dt>
-                  <dd>{metric.label}</dd>
-                </div>
-              ))}
-            </dl>
+            {!usingFallbackMetrics ? (
+              <dl className="hero-metrics" aria-live="polite" aria-describedby={heroNoticeId}>
+                {heroMetrics.map((metric) => (
+                  <div className="metric" key={metric.label}>
+                    <dt>{metric.value}</dt>
+                    <dd>{metric.label}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <dl className="hero-metrics" aria-live="polite" aria-describedby={heroNoticeId}>
+                {focusActions.map((action) => (
+                  <div className="metric" key={action.id}>
+                    <dt>
+                      <a className="text-link" href={action.href}>
+                        {action.actionLabel}
+                      </a>
+                    </dt>
+                    <dd>{action.helper}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
             {heroNoticeId ? (
               <p id={heroNoticeId} className="fallback-helper" aria-live="polite">
                 {landingDataError
-                  ? "Live workspace metrics couldn't load, so you're seeing the standard benchmarks."
-                  : 'Live workspace metrics are still syncing—showing standard benchmarks for now.'}
+                  ? "Live workspace metrics couldn't load, so we've surfaced direct links into the core queues."
+                  : 'Workspace metrics are still syncing—use these quick links to get hands-on right away.'}
               </p>
             ) : null}
           </div>
@@ -459,10 +587,23 @@ export default function Landing() {
                   <h3>{stream.title}</h3>
                   <p>{stream.summary}</p>
                   <ul>
-                    {stream.points.map((point) => (
-                      <li key={point}>{point}</li>
+                    {stream.checklist.map((item) => (
+                      <li key={item.label}>
+                        {item.href ? (
+                          <a className="text-link" href={item.href}>
+                            {item.label}
+                          </a>
+                        ) : (
+                          item.label
+                        )}
+                      </li>
                     ))}
                   </ul>
+                  {stream.action ? (
+                    <a className="text-link" href={stream.action.href}>
+                      {stream.action.label}
+                    </a>
+                  ) : null}
                 </article>
               ))}
             </div>
@@ -474,22 +615,57 @@ export default function Landing() {
             <div className="section-heading">
               <span className="kicker">Daily focus</span>
               <h2 id="focus-heading">What needs attention right now</h2>
-              <p>Review the live signals to align the team on today's priorities.</p>
+              <p>Use these workspace entry points to align the team and clear blockers.</p>
             </div>
             <div className="focus-grid" aria-describedby={focusGridHelperId}>
-              {focusSignals.map((signal) => (
-                <article className="focus-card" key={signal.label}>
-                  <h3>{signal.label}</h3>
-                  <p className="focus-value">{signal.value}</p>
-                  {signal.meta ? <p className="focus-meta">{signal.meta}</p> : null}
+              {focusActions.map((action) => (
+                <article className="focus-card" key={action.id}>
+                  <h3>{action.title}</h3>
+                  <p className="focus-value">{action.value}</p>
+                  {action.meta ? <p className="focus-meta">{action.meta}</p> : null}
+                  <p className="focus-meta">{action.helper}</p>
+                  <a className="text-link" href={action.href}>
+                    {action.actionLabel}
+                  </a>
                 </article>
               ))}
             </div>
             {usingFallbackSignals ? (
               <p id={focusGridHelperId} className="fallback-helper" aria-live="polite">
-                Live focus signals are unavailable, so we're showing baseline guidance.
+                Live focus signals are unavailable, so start with these quick entry points and share updates in stand-up.
               </p>
             ) : null}
+          </div>
+        </section>
+
+        <section className="demo" id="demo-access" aria-labelledby="demo-heading">
+          <div className="shell">
+            <div className="section-heading">
+              <span className="kicker">Hands-on tour</span>
+              <h2 id="demo-heading">Explore the sample workspace</h2>
+              <p>Jump into these pre-seeded accounts to experience the product without creating an account.</p>
+            </div>
+            <div className="access-grid">
+              {demoAccounts.map((account) => (
+                <article className="access-card" key={account.role}>
+                  <div className="access-card-header">
+                    <h3>{account.role}</h3>
+                    <span className="access-meta">{account.focus}</span>
+                  </div>
+                  <p>
+                    <strong>Email:</strong> {account.email}
+                    <br />
+                    <strong>Password:</strong> {account.password}
+                  </p>
+                  <a className="button outline" href={account.href}>
+                    Sign in as {account.role.toLowerCase()}
+                  </a>
+                </article>
+              ))}
+            </div>
+            <p className="fallback-helper" aria-live="polite">
+              Reset the environment anytime by running <code>node backend/seed_demo.js</code> in your terminal.
+            </p>
           </div>
         </section>
 
@@ -498,7 +674,11 @@ export default function Landing() {
             <div className="section-heading">
               <span className="kicker">Submit work</span>
               <h2 id="work-order-heading">Log a new work order</h2>
-              <p>Send the intake team the details needed to triage your request without email back-and-forth.</p>
+              <p>
+                Send the intake team the details needed to triage your request without email back-and-forth. Use the{' '}
+                <a className="text-link" href="/resources/intake-checklist">intake checklist</a>{' '}
+                to capture context before you submit.
+              </p>
             </div>
             <div className="work-order-card">
               <form className="work-order-form" onSubmit={handleWorkOrderSubmit}>
@@ -680,8 +860,19 @@ export default function Landing() {
                     <div className="role-column">
                       <h4>Key surfaces</h4>
                       <ul>
-                        {activeRole.tools.map((item) => (
-                          <li key={item}>{item}</li>
+                        {activeRole.tools.map((tool) => (
+                          <li key={tool.label}>
+                            {tool.href ? (
+                              <a className="text-link" href={tool.href}>
+                                {tool.label}
+                              </a>
+                            ) : (
+                              tool.label
+                            )}
+                            {tool.description ? (
+                              <p className="focus-meta">{tool.description}</p>
+                            ) : null}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -768,5 +959,40 @@ const accessSteps = [
       href: '/resources/intake-checklist',
       tone: 'link',
     },
+  },
+  {
+    title: 'Need help fast?',
+    description:
+      'Escalate urgent issues to the procurement operations team for same-day support.',
+    meta: 'Support',
+    action: {
+      label: 'Email procurement@demo.co',
+      href: 'mailto:procurement@demo.co',
+      tone: 'link',
+    },
+  },
+];
+
+const demoAccounts = [
+  {
+    role: 'Requester',
+    focus: 'Create requests and upload supporting documents.',
+    email: 'alex@demo.co',
+    password: 'demo1234',
+    href: '/login',
+  },
+  {
+    role: 'Approver',
+    focus: 'Clear approvals and leave policy notes.',
+    email: 'approver@demo.co',
+    password: 'demo1234',
+    href: '/login',
+  },
+  {
+    role: 'Admin',
+    focus: 'Manage settings, integrations, and vendor records.',
+    email: 'admin@demo.co',
+    password: 'demo1234',
+    href: '/login',
   },
 ];

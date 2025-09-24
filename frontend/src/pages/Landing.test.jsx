@@ -40,12 +40,14 @@ describe('Landing role selector', () => {
 
     expect(
       await screen.findByText(
-        /live workspace metrics couldn't load, so you're seeing the standard benchmarks\./i
+        /live workspace metrics couldn't load, so we've surfaced direct links into the core queues\./i
       )
     ).toBeInTheDocument();
 
     expect(
-      screen.getAllByText(/live focus signals will appear once workspace data syncs\./i)[0]
+      screen.getAllByText(
+        /live focus signals are unavailable, so start with these quick entry points and share updates in stand-up\./i
+      )[0]
     ).toBeInTheDocument();
 
     expect(consoleError).toHaveBeenCalled();
