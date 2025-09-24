@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowUpRight,
   FileSpreadsheet,
   Boxes,
   Workflow,
   Globe2,
+  CheckSquare,
+  Handshake,
+  Cog,
 } from "lucide-react";
 import { apiGet } from "../lib/api";
 import { Card, CardBody, CardHeader } from "../components/Card";
@@ -90,6 +93,7 @@ export default function Dashboard() {
   const [orders, setOrders] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState("overview");
 
   useEffect(() => {
     let active = true;
@@ -321,188 +325,529 @@ export default function Dashboard() {
 
   const vendorCount = Array.isArray(vendors) ? vendors.length : 0;
 
+  const sections = [
+    {
+      id: "overview",
+      label: "Overview",
+      description:
+        "Monitor spend commitments, catalogue health, and supplier activity across procurement.",
+    },
+    {
+      id: "requests",
+      label: "Requests",
+      description:
+        "Track intake demand, approvals, and purchase order readiness in one place.",
+    },
+    {
+      id: "administration",
+      label: "Administration",
+      description:
+        "Manage catalogue governance, supplier relationships, and system integrations.",
+    },
+  ];
+
+  const activeMeta =
+    sections.find((section) => section.id === activeSection) ?? sections[0];
+
+  let sectionContent;
+  switch (activeMeta.id) {
+    case "requests":
+      sectionContent = (
+        <RequestsPanel
+          kpi={kpi}
+          spendTotals={spendTotals}
+          highlightedRequests={highlightedRequests}
+          highlightTitle={highlightTitle}
+          highlightSubtitle={highlightSubtitle}
+          readyForPo={readyForPo}
+          loading={loading}
+          topCategories={topCategories}
+        />
+      );
+      break;
+    case "administration":
+      sectionContent = (
+        <AdministrationPanel
+          kpi={kpi}
+          vendorCount={vendorCount}
+          categoryCount={cats.length}
+        />
+      );
+      break;
+    default:
+      sectionContent = (
+        <OverviewPanel
+          kpi={kpi}
+          orderStats={orderStats}
+          categoryCount={cats.length}
+          vendorCount={vendorCount}
+        />
+      );
+      break;
+  }
+
   return (
     <div className="space-y-8">
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Kpi
-          title="Open purchase orders"
-          value={orderStats.open}
-          hint="Draft, pending, or issued"
-        />
-        <Kpi
-          title="Requests pending approval"
-          value={kpi.pending}
-          hint="Require finance or stakeholder review"
-        />
-        <Kpi
-          title="Active catalogue categories"
-          value={cats.length}
-          hint="Published for compliant shopping"
-        />
-        <Kpi
-          title="Active suppliers"
-          value={vendorCount}
-          hint="Engaged in recent purchasing"
-        />
-      </section>
+      <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-4 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="text-sm font-semibold text-slate-800">Workspace focus</div>
+            <p className="text-xs text-slate-500 md:max-w-md">{activeMeta.description}</p>
+          </div>
+          <SectionToggle
+            sections={sections}
+            activeId={activeMeta.id}
+            onSelect={setActiveSection}
+          />
+        </div>
+      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeMeta.id}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          className="space-y-8"
+        >
+          {sectionContent}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
 
+function OverviewPanel({ kpi, orderStats, categoryCount, vendorCount }) {
+  return (
+    <div className="space-y-8">
+      <WorkspaceKpis
+        kpi={kpi}
+        orderStats={orderStats}
+        categoryCount={categoryCount}
+        vendorCount={vendorCount}
+      />
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <Card>
-          <CardHeader
-            title="Purchase orders at a glance"
-            subtitle="Finance-critical visibility into spend commitments"
-            actions={
-              <Link
-                className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
-                to="/app/purchase-orders"
-              >
-                View register <ArrowUpRight size={16} />
-              </Link>
-            }
-          />
-          <CardBody className="space-y-5">
-            <div className="grid gap-4 md:grid-cols-3">
-              <SummaryTile
-                label="Open"
-                value={orderStats.open}
-                description="Draft, pending approval, or issued"
-              />
-              <SummaryTile
-                label="Receiving"
-                value={orderStats.receiving}
-                description="Awaiting goods receipt"
-              />
-              <SummaryTile
-                label="Closed"
-                value={orderStats.closed}
-                description="Fully received and reconciled"
-              />
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-4">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-slate-500">
-                    Committed spend
-                  </div>
-                  <div className="text-xl font-semibold text-slate-900">
-                    {formatCurrency(orderStats.committed)}
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Derived from {kpi.approved} approved request
-                    {kpi.approved === 1 ? "" : "s"} ready for PO creation.
-                  </p>
-                </div>
-                <div className="grid gap-2 text-sm text-slate-600 sm:min-w-[220px]">
-                  <StatusLine
-                    label="Due in the next 7 days"
-                    value={orderStats.dueSoon}
-                  />
-                  <StatusLine
-                    label="Past-due receipts"
-                    value={orderStats.late}
-                    highlight
-                  />
-                </div>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader
-            title="Procurement quick actions"
-            subtitle="Keep purchasing moving fast"
-          />
-          <CardBody className="space-y-3">
-            {QUICK_ACTIONS.map((action) => (
-              <ActionRow key={action.title} {...action} />
-            ))}
-          </CardBody>
-        </Card>
+        <PurchaseOrdersCard orderStats={orderStats} kpi={kpi} />
+        <QuickActionsCard />
       </section>
+    </div>
+  );
+}
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader
-            title="Catalogue coverage"
-            subtitle="Track high-impact categories and catalogue readiness"
-            actions={
-              <Link
-                className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
-                to="/app/catalog"
-              >
-                Manage catalogue <ArrowUpRight size={16} />
-              </Link>
-            }
-          />
-          <CardBody className="space-y-4">
-            {topCategories.length ? (
-              topCategories.map((cat) => (
-                <CategoryRow key={cat.name} {...cat} />
-              ))
-            ) : (
-              <div className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-                {loading
-                  ? "Loading catalogue insight…"
-                  : "Catalogue activity will appear here as soon as requests reference approved categories."}
-              </div>
-            )}
-            <div className="rounded-xl bg-white/60 px-4 py-3 text-xs text-slate-500">
-              Publish vendor-managed feeds or punchout links from the catalogue workspace to steer compliant buying.
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader
-            title="Integration & automation"
-            subtitle="Connect purchasing to finance, ERP, and analytics"
-            actions={
-              <Link
-                className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
-                to="/app/integrations"
-              >
-                Manage integrations <ArrowUpRight size={16} />
-              </Link>
-            }
-          />
-          <CardBody className="space-y-3">
-            {CONNECTOR_SUMMARY.map((connector) => (
-              <ConnectorRow key={connector.id} {...connector} />
-            ))}
-          </CardBody>
-        </Card>
-      </section>
-
-      <Card>
-        <CardHeader
-          title={highlightTitle}
-          subtitle={highlightSubtitle}
-          actions={
-            readyForPo.length ? (
-              <Link
-                className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
-                to="/app/purchase-orders"
-              >
-                Start PO draft <ArrowUpRight size={16} />
-              </Link>
-            ) : null
-          }
+function RequestsPanel({
+  kpi,
+  spendTotals,
+  highlightedRequests,
+  highlightTitle,
+  highlightSubtitle,
+  readyForPo,
+  loading,
+  topCategories,
+}) {
+  return (
+    <div className="space-y-8">
+      <section className="grid gap-6 xl:grid-cols-[2fr_1fr]">
+        <RequestPipelineCard kpi={kpi} spendTotals={spendTotals} />
+        <RequestHighlightsCard
+          highlightedRequests={highlightedRequests}
+          highlightTitle={highlightTitle}
+          highlightSubtitle={highlightSubtitle}
+          readyForPo={readyForPo}
+          loading={loading}
         />
-        <CardBody className="space-y-3">
-          {highlightedRequests.length ? (
-            highlightedRequests.map((request) => (
-              <RequestRow key={request.id} request={request} />
-            ))
-          ) : (
-            <div className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-              {loading
-                ? "Loading procurement activity…"
-                : "Once requests are submitted and approved, they will appear here ready for purchase order creation."}
+      </section>
+      <CatalogueCoverageCard topCategories={topCategories} loading={loading} />
+    </div>
+  );
+}
+
+function AdministrationPanel({ kpi, vendorCount, categoryCount }) {
+  return (
+    <div className="space-y-8">
+      <section className="grid gap-6 lg:grid-cols-2">
+        <IntegrationsCard />
+        <GovernanceCard
+          kpi={kpi}
+          vendorCount={vendorCount}
+          categoryCount={categoryCount}
+        />
+      </section>
+    </div>
+  );
+}
+
+function WorkspaceKpis({ kpi, orderStats, categoryCount, vendorCount }) {
+  return (
+    <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <Kpi
+        title="Open purchase orders"
+        value={orderStats.open}
+        hint="Draft, pending, or issued"
+      />
+      <Kpi
+        title="Requests pending approval"
+        value={kpi.pending}
+        hint="Require finance or stakeholder review"
+      />
+      <Kpi
+        title="Active catalogue categories"
+        value={categoryCount}
+        hint="Published for compliant shopping"
+      />
+      <Kpi
+        title="Active suppliers"
+        value={vendorCount}
+        hint="Engaged in recent purchasing"
+      />
+    </section>
+  );
+}
+
+function PurchaseOrdersCard({ orderStats, kpi }) {
+  return (
+    <Card>
+      <CardHeader
+        title="Purchase orders at a glance"
+        subtitle="Finance-critical visibility into spend commitments"
+        actions={
+          <Link
+            className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
+            to="/app/purchase-orders"
+          >
+            View register <ArrowUpRight size={16} />
+          </Link>
+        }
+      />
+      <CardBody className="space-y-5">
+        <div className="grid gap-4 md:grid-cols-3">
+          <SummaryTile
+            label="Open"
+            value={orderStats.open}
+            description="Draft, pending approval, or issued"
+          />
+          <SummaryTile
+            label="Receiving"
+            value={orderStats.receiving}
+            description="Awaiting goods receipt"
+          />
+          <SummaryTile
+            label="Closed"
+            value={orderStats.closed}
+            description="Fully received and reconciled"
+          />
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-wide text-slate-500">
+                Committed spend
+              </div>
+              <div className="text-xl font-semibold text-slate-900">
+                {formatCurrency(orderStats.committed)}
+              </div>
+              <p className="mt-1 text-xs text-slate-500">
+                Derived from {kpi.approved} approved request
+                {kpi.approved === 1 ? "" : "s"} ready for PO creation.
+              </p>
             </div>
-          )}
-        </CardBody>
-      </Card>
+            <div className="grid gap-2 text-sm text-slate-600 sm:min-w-[220px]">
+              <StatusLine
+                label="Due in the next 7 days"
+                value={orderStats.dueSoon}
+              />
+              <StatusLine
+                label="Past-due receipts"
+                value={orderStats.late}
+                highlight
+              />
+            </div>
+          </div>
+        </div>
+      </CardBody>
+    </Card>
+  );
+}
+
+function QuickActionsCard() {
+  return (
+    <Card>
+      <CardHeader
+        title="Procurement quick actions"
+        subtitle="Keep purchasing moving fast"
+      />
+      <CardBody className="space-y-3">
+        {QUICK_ACTIONS.map((action) => (
+          <ActionRow key={action.title} {...action} />
+        ))}
+      </CardBody>
+    </Card>
+  );
+}
+
+function RequestPipelineCard({ kpi, spendTotals }) {
+  const tiles = [
+    {
+      key: "submitted",
+      label: "Submitted",
+      value: kpi.total,
+      description: `${formatCurrency(spendTotals.requested)} requested`,
+    },
+    {
+      key: "approved",
+      label: "Approved",
+      value: kpi.approved,
+      description: `${formatCurrency(spendTotals.approved)} approved`,
+    },
+    {
+      key: "pending",
+      label: "Pending",
+      value: kpi.pending,
+      description: `${formatCurrency(spendTotals.pending)} awaiting review`,
+    },
+  ];
+
+  const deniedCopy = kpi.denied
+    ? `${kpi.denied} request${kpi.denied === 1 ? "" : "s"} denied`
+    : "No denials this period";
+
+  const readinessCopy = kpi.approved
+    ? `${kpi.approved} approval${kpi.approved === 1 ? "" : "s"} are ready for purchase orders.`
+    : "As approvals arrive, requests ready for purchase orders will surface here.";
+
+  return (
+    <Card>
+      <CardHeader
+        title="Request pipeline"
+        subtitle="Understand demand volume and approval readiness"
+      />
+      <CardBody className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          {tiles.map((tile) => (
+            <SummaryTile
+              key={tile.key}
+              label={tile.label}
+              value={tile.value}
+              description={tile.description}
+            />
+          ))}
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-xs text-slate-600">
+          <div className="font-semibold text-slate-700">{readinessCopy}</div>
+          <p className="mt-1">{deniedCopy}.</p>
+        </div>
+      </CardBody>
+    </Card>
+  );
+}
+
+function CatalogueCoverageCard({ topCategories, loading }) {
+  return (
+    <Card>
+      <CardHeader
+        title="Catalogue coverage"
+        subtitle="Track high-impact categories and catalogue readiness"
+        actions={
+          <Link
+            className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
+            to="/app/catalog"
+          >
+            Manage catalogue <ArrowUpRight size={16} />
+          </Link>
+        }
+      />
+      <CardBody className="space-y-4">
+        {topCategories.length ? (
+          topCategories.map((cat) => <CategoryRow key={cat.name} {...cat} />)
+        ) : (
+          <div className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
+            {loading
+              ? "Loading catalogue insight…"
+              : "Catalogue activity will appear here as soon as requests reference approved categories."}
+          </div>
+        )}
+        <div className="rounded-xl bg-white/60 px-4 py-3 text-xs text-slate-500">
+          Publish vendor-managed feeds or punchout links from the catalogue workspace to steer compliant buying.
+        </div>
+      </CardBody>
+    </Card>
+  );
+}
+
+function IntegrationsCard() {
+  return (
+    <Card>
+      <CardHeader
+        title="Integration & automation"
+        subtitle="Connect purchasing to finance, ERP, and analytics"
+        actions={
+          <Link
+            className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
+            to="/app/integrations"
+          >
+            Manage integrations <ArrowUpRight size={16} />
+          </Link>
+        }
+      />
+      <CardBody className="space-y-3">
+        {CONNECTOR_SUMMARY.map((connector) => (
+          <ConnectorRow key={connector.id} {...connector} />
+        ))}
+      </CardBody>
+    </Card>
+  );
+}
+
+function RequestHighlightsCard({
+  highlightedRequests,
+  highlightTitle,
+  highlightSubtitle,
+  readyForPo,
+  loading,
+}) {
+  return (
+    <Card>
+      <CardHeader
+        title={highlightTitle}
+        subtitle={highlightSubtitle}
+        actions={
+          readyForPo.length ? (
+            <Link
+              className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
+              to="/app/purchase-orders"
+            >
+              Start PO draft <ArrowUpRight size={16} />
+            </Link>
+          ) : null
+        }
+      />
+      <CardBody className="space-y-3">
+        {highlightedRequests.length ? (
+          highlightedRequests.map((request) => (
+            <RequestRow key={request.id} request={request} />
+          ))
+        ) : (
+          <div className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
+            {loading
+              ? "Loading procurement activity…"
+              : "Once requests are submitted and approved, they will appear here ready for purchase order creation."}
+          </div>
+        )}
+      </CardBody>
+    </Card>
+  );
+}
+
+function GovernanceCard({ kpi, vendorCount, categoryCount }) {
+  const approvalMetric = kpi.pending
+    ? `${kpi.pending} pending`
+    : "All caught up";
+  const catalogueMetric = categoryCount
+    ? `${categoryCount} active`
+    : "Publish catalogue";
+  const supplierMetric = vendorCount
+    ? `${vendorCount} active`
+    : "Invite suppliers";
+
+  const rows = [
+    {
+      id: "approvals",
+      to: "/app/approvals",
+      title: "Approval routing",
+      description: "Review outstanding approvals and escalate blockers.",
+      metric: approvalMetric,
+      icon: CheckSquare,
+    },
+    {
+      id: "catalogue",
+      to: "/app/catalog",
+      title: "Catalogue governance",
+      description: "Ensure preferred items and accounting codes stay current.",
+      metric: catalogueMetric,
+      icon: Boxes,
+    },
+    {
+      id: "vendors",
+      to: "/app/vendors",
+      title: "Supplier relationships",
+      description: "Maintain onboarding data and monitor engagement levels.",
+      metric: supplierMetric,
+      icon: Handshake,
+    },
+    {
+      id: "settings",
+      to: "/app/settings",
+      title: "Policies & access",
+      description: "Tune approval thresholds, automation, and workspace roles.",
+      metric: "Workspace settings",
+      icon: Cog,
+    },
+  ];
+
+  return (
+    <Card>
+      <CardHeader
+        title="Workspace governance"
+        subtitle="Keep policies, catalogue, and supplier access aligned"
+        actions={
+          <Link
+            className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
+            to="/app/settings"
+          >
+            Open settings <ArrowUpRight size={16} />
+          </Link>
+        }
+      />
+      <CardBody className="space-y-3">
+        {rows.map((row) => (
+          <GovernanceRow key={row.id} {...row} />
+        ))}
+      </CardBody>
+    </Card>
+  );
+}
+
+function GovernanceRow({ to, title, description, metric, icon: Icon }) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 transition hover:border-blue-200 hover:bg-blue-50/70"
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-blue-50 text-blue-600 group-hover:bg-blue-100">
+          {Icon ? <Icon size={18} strokeWidth={1.75} /> : null}
+        </div>
+        <div className="min-w-0">
+          <div className="font-medium text-slate-800 group-hover:text-blue-700">{title}</div>
+          <p className="text-xs leading-relaxed text-slate-500">{description}</p>
+        </div>
+      </div>
+      <div className="shrink-0 text-xs font-semibold text-slate-600 group-hover:text-blue-700">
+        {metric}
+      </div>
+    </Link>
+  );
+}
+
+function SectionToggle({ sections, activeId, onSelect }) {
+  return (
+    <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+      {sections.map((section) => {
+        const isActive = section.id === activeId;
+        return (
+          <button
+            key={section.id}
+            type="button"
+            onClick={() => onSelect?.(section.id)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+              isActive
+                ? "bg-blue-600 text-white shadow"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            }`}
+          >
+            {section.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
