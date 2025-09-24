@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import ThemeToggle from "./components/ThemeToggle";
+import Notifications from "./components/Notifications";
 import { useAuth } from "./lib/auth";
 import Dashboard from "./pages/Dashboard";
 import PurchaseOrders from "./pages/PurchaseOrders";
@@ -257,6 +258,7 @@ export default function App() {
                 </Link>
               </div>
             )}
+            <Notifications />
             <ThemeToggle />
           </div>
         </div>
