@@ -218,114 +218,96 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100/70 text-slate-900 md:grid md:grid-cols-[260px_1fr]">
-      {/* Sidebar */}
-      <aside className="hidden min-h-screen md:flex flex-col border-r border-slate-200 bg-white/90 backdrop-blur">
-        <div className="border-b border-slate-200 px-6 py-6">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-blue-600">Procurement</div>
-          <div className="mt-2 text-lg font-semibold text-slate-900">Control workspace</div>
-          <p className="mt-2 text-xs leading-relaxed text-slate-500">
-            Purchasing, catalogue, and integrations managed in one place.
-          </p>
-        </div>
-        <nav className="flex-1 space-y-6 px-4 py-5">
-          {NAV_GROUPS.map((group) => {
-            const groupItems = group.items
-              .map((key) => NAV_ITEMS[key])
-              .filter(Boolean);
-
-            if (groupItems.length === 0) return null;
-
-            return (
-              <div key={group.id} className="space-y-2">
-                <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-400">
-                  {group.label}
-                </div>
-                {group.description ? (
-                  <p className="px-3 text-xs leading-relaxed text-slate-500">{group.description}</p>
-                ) : null}
-                <div className="space-y-1.5">
-                  {groupItems.map((item) => (
-                    <Nav key={item.to} to={item.to} end={item.end} icon={item.icon}>
-                      {item.label}
-                    </Nav>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </nav>
-        <div className="space-y-3 border-t border-slate-200 px-6 py-5 text-sm text-slate-600">
-          {user ? (
-            <div className="space-y-2">
-              <div className="text-xs uppercase tracking-wide text-slate-500">Signed in</div>
-              <div className="truncate font-medium text-slate-700" title={user.email}>
-                {user.email}
-              </div>
-              <button
-                onClick={handleLogout}
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
-              >
-                <LogOut size={16} strokeWidth={1.75} /> Sign out
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between text-sm">
-              <Link className="inline-flex items-center gap-1 text-blue-700" to="/login">
-                <LogIn size={16} strokeWidth={1.75} /> Login
-              </Link>
-              <Link className="inline-flex items-center gap-1 text-slate-700" to="/signup">
-                <UserPlus size={16} strokeWidth={1.75} /> Sign up
-              </Link>
-            </div>
-          )}
-          <ThemeToggle />
-        </div>
-      </aside>
-
-      {/* Main */}
-      <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur md:hidden">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-blue-600">
-                Procurement
-              </div>
-              <div className="text-base font-semibold text-slate-900">Control workspace</div>
-            </div>
+    <div className="page workspace">
+      <header className="site-header workspace-header" id="top">
+        <div className="shell nav-shell workspace-nav-shell">
+          <Link className="brand workspace-brand" to="/app">
+            <span className="brand-mark" aria-hidden="true" />
+            <span>Procurement workspace</span>
+          </Link>
+          <nav className="workspace-nav" aria-label="Workspace navigation">
+            {Object.values(NAV_ITEMS).map((item) => (
+              <Nav key={item.to} to={item.to} end={item.end} icon={item.icon}>
+                {item.label}
+              </Nav>
+            ))}
+          </nav>
+          <div className="workspace-actions">
             {user ? (
-              <div className="flex items-center gap-2 text-xs font-medium">
-                <Link
-                  className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700"
-                  to="/app/purchase-orders"
+              <div className="workspace-user" title={user.email}>
+                <span className="workspace-user-email">{user.email}</span>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="button outline workspace-signout"
                 >
-                  POs
-                </Link>
-                <Link
-                  className="rounded-full border border-slate-200 px-3 py-1 text-slate-600"
-                  to="/app/catalog"
-                >
-                  Catalog
-                </Link>
+                  <LogOut size={16} strokeWidth={1.75} aria-hidden="true" />
+                  Sign out
+                </button>
               </div>
             ) : (
-              <div className="flex items-center gap-3 text-sm">
-                <Link className="text-blue-700" to="/login">
-                  Login
+              <div className="workspace-auth">
+                <Link className="workspace-auth-link" to="/login">
+                  <LogIn size={16} strokeWidth={1.75} aria-hidden="true" />
+                  Sign in
                 </Link>
-                <Link className="text-slate-700" to="/signup">
-                  Sign up
+                <Link className="button primary" to="/signup">
+                  <UserPlus size={16} strokeWidth={1.75} aria-hidden="true" />
+                  Create account
                 </Link>
               </div>
             )}
+            <ThemeToggle />
           </div>
-        </header>
+        </div>
+      </header>
 
-        <AnimatedRoutes />
-        <footer className="px-4 py-6 text-xs text-slate-500 md:px-8">
-          © {new Date().getFullYear()} Procurement workspace
-        </footer>
-      </div>
+      <main className="workspace-main">
+        <div className="shell workspace-shell">
+          <div className="workspace-grid">
+            <aside className="workspace-sidebar" aria-label="Workspace sections">
+              {NAV_GROUPS.map((group) => {
+                const groupItems = group.items
+                  .map((key) => NAV_ITEMS[key])
+                  .filter(Boolean);
+
+                if (groupItems.length === 0) return null;
+
+                return (
+                  <section key={group.id} className="workspace-sidebar-group">
+                    <div className="workspace-sidebar-kicker">{group.label}</div>
+                    {group.description ? (
+                      <p className="workspace-sidebar-description">{group.description}</p>
+                    ) : null}
+                    <div className="workspace-sidebar-links">
+                      {groupItems.map((item) => (
+                        <SidebarLink
+                          key={`sidebar-${item.to}`}
+                          to={item.to}
+                          end={item.end}
+                          icon={item.icon}
+                        >
+                          {item.label}
+                        </SidebarLink>
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
+            </aside>
+            <div className="workspace-content">
+              <section className="workspace-hero-wrapper">
+                <Hero />
+              </section>
+              <AnimatedRoutes />
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer className="workspace-footer">
+        <div className="shell">© {new Date().getFullYear()} Procurement workspace</div>
+      </footer>
     </div>
   );
 }
@@ -333,13 +315,14 @@ export default function App() {
 function AnimatedRoutes() {
   const location = useLocation();
   return (
-    <div className="container mx-auto px-4 py-6 md:px-8">
+    <div className="workspace-route-area">
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0, transition: { duration: 0.24, ease: "easeOut" } }}
-          exit={{ opacity: 0, y: -6, transition: { duration: 0.18 } }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0, transition: { duration: 0.28, ease: "easeOut" } }}
+          exit={{ opacity: 0, y: -10, transition: { duration: 0.18, ease: "easeIn" } }}
+          className="workspace-route-frame"
         >
           <Routes location={location}>
             <Route
@@ -417,12 +400,7 @@ function AnimatedRoutes() {
 }
 
 function PageShell({ children }) {
-  return (
-    <div className="space-y-6">
-      <Hero />
-      {children}
-    </div>
-  );
+  return <section className="workspace-surface">{children}</section>;
 }
 
 function Hero() {
@@ -454,41 +432,34 @@ function Hero() {
     .filter(Boolean);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur">
-      <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-3">
-          <div className="text-xs uppercase tracking-[0.32em] text-slate-500">Home / {crumb}</div>
-          <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">{meta.title || crumb}</h1>
-          {meta.description && (
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
-              {meta.description}
-            </p>
-          )}
+    <div className="workspace-hero-card">
+      <div className="workspace-hero-body">
+        <div className="workspace-hero-copy">
+          <div className="workspace-hero-crumb">Workspace / {crumb}</div>
+          <h1 className="workspace-hero-title">{meta.title || crumb}</h1>
+          {meta.description ? (
+            <p className="workspace-hero-description">{meta.description}</p>
+          ) : null}
         </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-600 md:max-w-xs">
-          <div className="font-semibold text-slate-700">Finance workspace</div>
-          <div className="mt-1 text-xs text-slate-500">
+        <div className="workspace-hero-panel">
+          <div className="workspace-hero-panel-title">Finance workspace</div>
+          <div className="workspace-hero-panel-meta">
             {user?.email ? `Signed in as ${user.email}` : "Sign in to manage purchasing."}
           </div>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600">
+          <p className="workspace-hero-panel-description">
             Keep purchase orders, catalogue governance, and integrations aligned so budgets stay on plan.
           </p>
         </div>
       </div>
-      {quickLinkGroups.length > 0 && (
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+      {quickLinkGroups.length > 0 ? (
+        <div className="workspace-hero-links">
           {quickLinkGroups.map((group) => (
-            <section
-              key={group.id}
-              className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-600"
-            >
-              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-blue-600">
-                {group.label}
-              </div>
+            <section key={group.id} className="workspace-quick-link-group">
+              <div className="workspace-quick-link-kicker">{group.label}</div>
               {group.description ? (
-                <p className="mt-2 text-xs leading-relaxed text-slate-500">{group.description}</p>
+                <p className="workspace-quick-link-description">{group.description}</p>
               ) : null}
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="workspace-quick-link-row">
                 {group.links.map((link) => (
                   <QuickLink key={`${group.id}-${link.to}`} {...link} />
                 ))}
@@ -496,7 +467,7 @@ function Hero() {
             </section>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -507,13 +478,25 @@ function Nav({ to, icon: Icon, children, end }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition " +
-        (isActive
-          ? "bg-blue-50 text-blue-700 shadow-sm"
-          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900")
+        `workspace-nav-link${isActive ? " active" : ""}`
       }
     >
-      {Icon ? <Icon size={18} strokeWidth={1.75} /> : null}
+      {Icon ? <Icon size={18} strokeWidth={1.75} aria-hidden="true" /> : null}
+      <span>{children}</span>
+    </NavLink>
+  );
+}
+
+function SidebarLink({ to, icon: Icon, children, end }) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        `workspace-sidebar-link${isActive ? " active" : ""}`
+      }
+    >
+      {Icon ? <Icon size={16} strokeWidth={1.6} aria-hidden="true" /> : null}
       <span>{children}</span>
     </NavLink>
   );
@@ -521,12 +504,9 @@ function Nav({ to, icon: Icon, children, end }) {
 
 function QuickLink({ to, label, icon: Icon }) {
   return (
-    <Link
-      to={to}
-      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-    >
-      {Icon ? <Icon size={14} strokeWidth={1.75} /> : null}
-      {label}
+    <Link to={to} className="workspace-quick-link">
+      {Icon ? <Icon size={14} strokeWidth={1.75} aria-hidden="true" /> : null}
+      <span>{label}</span>
     </Link>
   );
 }
