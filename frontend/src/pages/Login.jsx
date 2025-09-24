@@ -54,7 +54,7 @@ export default function Login() {
   }
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Sign in to your workspace.">
+    <AuthLayout title="Log in">
       <>
         {err ? (
           <div className="rounded-2xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-600 shadow-sm">
@@ -96,13 +96,10 @@ export default function Login() {
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
-        <p className="text-center text-xs text-slate-500">
-          Locked out? Your workspace admin can help reset access.
-        </p>
         <p className="text-center text-sm text-slate-500">
-          New to Procurement Manager?{" "}
+          Need an account?{" "}
           <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-700">
-            Create an account
+            Create one
           </Link>
         </p>
       </>
