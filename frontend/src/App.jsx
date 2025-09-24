@@ -10,19 +10,130 @@ import {
   FileSpreadsheet,
   Boxes,
   Handshake,
-  Workflow,
   Globe2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import ThemeToggle from "./components/ThemeToggle";
 import { useAuth } from "./lib/auth";
 
-const DEFAULT_QUICK_LINKS = [
-  { to: "/app/purchase-orders", label: "Purchase orders", icon: FileSpreadsheet },
-  { to: "/app/catalog", label: "Catalogue", icon: Boxes },
-  { to: "/app/integrations", label: "PunchOut & integrations", icon: Globe2 },
-  { to: "/app/requests", label: "Requests pipeline", icon: Workflow },
+const NAV_ITEMS = {
+  dashboard: {
+    to: "/app",
+    label: "Dashboard",
+    quickLabel: "Control center overview",
+    icon: LayoutGrid,
+    end: true,
+  },
+  purchaseOrders: {
+    to: "/app/purchase-orders",
+    label: "Purchase orders",
+    icon: FileSpreadsheet,
+  },
+  catalog: {
+    to: "/app/catalog",
+    label: "Catalogue",
+    quickLabel: "Catalogue workspace",
+    icon: Boxes,
+  },
+  requests: {
+    to: "/app/requests",
+    label: "Requests",
+    quickLabel: "Requests pipeline",
+    icon: ShoppingCart,
+  },
+  approvals: {
+    to: "/app/approvals",
+    label: "Approvals",
+    quickLabel: "Approval routing",
+    icon: CheckSquare,
+  },
+  vendors: {
+    to: "/app/vendors",
+    label: "Vendors",
+    quickLabel: "Preferred vendors",
+    icon: Handshake,
+  },
+  integrations: {
+    to: "/app/integrations",
+    label: "Integrations",
+    quickLabel: "PunchOut & integrations",
+    icon: Globe2,
+  },
+  settings: {
+    to: "/app/settings",
+    label: "Settings",
+    quickLabel: "Workspace settings",
+    icon: Cog,
+  },
+};
+
+const NAV_GROUPS = [
+  {
+    id: "control",
+    label: "Control center",
+    description: "High-level overview of spend and activity.",
+    items: ["dashboard"],
+  },
+  {
+    id: "operations",
+    label: "Procure-to-pay",
+    description: "Intake demand and convert approvals into purchase orders.",
+    items: ["purchaseOrders", "requests", "approvals"],
+  },
+  {
+    id: "catalogue",
+    label: "Catalogue & suppliers",
+    description: "Keep buying content and partners in sync.",
+    items: ["catalog", "vendors"],
+  },
+  {
+    id: "connectivity",
+    label: "Connectivity",
+    description: "Integrate storefronts, ERPs, and automation feeds.",
+    items: ["integrations"],
+  },
+  {
+    id: "admin",
+    label: "Administration",
+    description: "Manage policies, thresholds, and workspace access.",
+    items: ["settings"],
+  },
 ];
+
+const QUICK_LINK_GROUPS = {
+  control: {
+    id: "control",
+    label: "Control center",
+    description: "Jump back to the executive overview and KPI rollups.",
+    items: ["dashboard"],
+  },
+  operations: {
+    id: "operations",
+    label: "Procure-to-pay",
+    description: "Move requisitions to fully approved spend commitments.",
+    items: ["purchaseOrders", "requests", "approvals"],
+  },
+  catalogue: {
+    id: "catalogue",
+    label: "Catalogue & suppliers",
+    description: "Curate items and manage supplier relationships.",
+    items: ["catalog", "vendors"],
+  },
+  connectivity: {
+    id: "connectivity",
+    label: "Connectivity",
+    description: "Sync purchasing data with ERPs, PunchOut, and automation.",
+    items: ["integrations"],
+  },
+  admin: {
+    id: "admin",
+    label: "Administration",
+    description: "Tune controls, thresholds, and user access.",
+    items: ["settings"],
+  },
+};
+
+const DEFAULT_QUICK_LINK_GROUPS = ["operations", "catalogue", "connectivity"];
 
 const HERO_META = {
   dashboard: {
@@ -30,60 +141,56 @@ const HERO_META = {
     title: "Procurement control center",
     description:
       "Monitor spend commitments, catalogue health, and supplier activity in a finance-ready workspace.",
-    quickLinks: DEFAULT_QUICK_LINKS,
+    quickLinkGroups: ["operations", "catalogue", "connectivity", "admin"],
   },
   "purchase-orders": {
     crumb: "Purchase orders",
     title: "Purchase orders",
     description:
       "Issue, track, and reconcile the purchase orders that drive your spend commitments.",
-    quickLinks: [
-      DEFAULT_QUICK_LINKS[0],
-      { to: "/app/requests", label: "Approved requests", icon: ShoppingCart },
-      { to: "/app/integrations", label: "Send to ERP", icon: Workflow },
-    ],
+    quickLinkGroups: ["operations", "connectivity", "catalogue"],
   },
   catalog: {
     crumb: "Catalogue",
     title: "Catalogue",
     description:
       "Curate approved items, manage vendor content, and keep teams buying from the right sources.",
-    quickLinks: [
-      DEFAULT_QUICK_LINKS[1],
-      { to: "/app/vendors", label: "Preferred suppliers", icon: Handshake },
-      { to: "/app/integrations", label: "PunchOut connectors", icon: Globe2 },
-    ],
+    quickLinkGroups: ["catalogue", "operations", "connectivity"],
   },
   requests: {
     crumb: "Requests",
     title: "Requests",
     description:
       "Review demand, shepherd approvals, and convert qualified requisitions into purchase orders.",
+    quickLinkGroups: ["operations", "catalogue"],
   },
   approvals: {
     crumb: "Approvals",
     title: "Approvals",
     description:
       "Align stakeholders on spend decisions and keep purchasing compliant with finance controls.",
+    quickLinkGroups: ["operations"],
   },
   vendors: {
     crumb: "Vendors",
     title: "Vendors",
     description:
       "Nurture supplier relationships, track risk, and share procurement-ready data with finance.",
+    quickLinkGroups: ["catalogue", "connectivity"],
   },
   integrations: {
     crumb: "Integrations",
     title: "PunchOut & integrations",
     description:
       "Connect ERPs, AP automation, and punchout storefronts so purchasing flows straight into finance.",
-    quickLinks: [DEFAULT_QUICK_LINKS[2], DEFAULT_QUICK_LINKS[0], DEFAULT_QUICK_LINKS[1]],
+    quickLinkGroups: ["connectivity", "operations", "catalogue"],
   },
   settings: {
     crumb: "Settings",
     title: "Settings",
     description:
       "Tune approval thresholds, routing, and automation to reflect procurement policy.",
+    quickLinkGroups: ["admin", "operations", "connectivity"],
   },
 };
 
@@ -93,21 +200,6 @@ export default function App() {
   function handleLogout() {
     signOut();
   }
-
-  const navItems = [
-    { to: "/app", label: "Dashboard", icon: <LayoutGrid size={18} strokeWidth={1.75} />, end: true },
-    {
-      to: "/app/purchase-orders",
-      label: "Purchase orders",
-      icon: <FileSpreadsheet size={18} strokeWidth={1.75} />,
-    },
-    { to: "/app/catalog", label: "Catalogue", icon: <Boxes size={18} strokeWidth={1.75} /> },
-    { to: "/app/requests", label: "Requests", icon: <ShoppingCart size={18} strokeWidth={1.75} /> },
-    { to: "/app/approvals", label: "Approvals", icon: <CheckSquare size={18} strokeWidth={1.75} /> },
-    { to: "/app/vendors", label: "Vendors", icon: <Handshake size={18} strokeWidth={1.75} /> },
-    { to: "/app/integrations", label: "Integrations", icon: <Workflow size={18} strokeWidth={1.75} /> },
-    { to: "/app/settings", label: "Settings", icon: <Cog size={18} strokeWidth={1.75} /> },
-  ];
 
   return (
     <div className="min-h-screen bg-slate-100/70 text-slate-900 md:grid md:grid-cols-[260px_1fr]">
@@ -120,12 +212,32 @@ export default function App() {
             Purchasing, catalogue, and integrations managed in one place.
           </p>
         </div>
-        <nav className="flex-1 space-y-1 px-4 py-4">
-          {navItems.map((item) => (
-            <Nav key={item.to} to={item.to} end={item.end} icon={item.icon}>
-              {item.label}
-            </Nav>
-          ))}
+        <nav className="flex-1 space-y-6 px-4 py-5">
+          {NAV_GROUPS.map((group) => {
+            const groupItems = group.items
+              .map((key) => NAV_ITEMS[key])
+              .filter(Boolean);
+
+            if (groupItems.length === 0) return null;
+
+            return (
+              <div key={group.id} className="space-y-2">
+                <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-400">
+                  {group.label}
+                </div>
+                {group.description ? (
+                  <p className="px-3 text-xs leading-relaxed text-slate-500">{group.description}</p>
+                ) : null}
+                <div className="space-y-1.5">
+                  {groupItems.map((item) => (
+                    <Nav key={item.to} to={item.to} end={item.end} icon={item.icon}>
+                      {item.label}
+                    </Nav>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </nav>
         <div className="space-y-3 border-t border-slate-200 px-6 py-5 text-sm text-slate-600">
           {user ? (
@@ -233,7 +345,22 @@ function Hero() {
   if (!key) key = "dashboard";
   const meta = HERO_META[key] || HERO_META.dashboard;
   const crumb = meta.crumb || meta.title || key;
-  const quickLinks = meta.quickLinks ?? DEFAULT_QUICK_LINKS;
+  const quickLinkGroups = (meta.quickLinkGroups ?? DEFAULT_QUICK_LINK_GROUPS)
+    .map((groupKey) => {
+      const group = QUICK_LINK_GROUPS[groupKey];
+      if (!group) return null;
+      const links = group.items
+        .map((itemKey) => NAV_ITEMS[itemKey])
+        .filter(Boolean)
+        .map((item) => ({
+          to: item.to,
+          label: item.quickLabel ?? item.label,
+          icon: item.icon,
+        }));
+      if (links.length === 0) return null;
+      return { ...group, links };
+    })
+    .filter(Boolean);
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur">
@@ -257,10 +384,25 @@ function Hero() {
           </p>
         </div>
       </div>
-      {Array.isArray(quickLinks) && quickLinks.length > 0 && (
-        <div className="mt-5 flex flex-wrap gap-2">
-          {quickLinks.map((link) => (
-            <QuickLink key={`${link.to}-${link.label}`} {...link} />
+      {quickLinkGroups.length > 0 && (
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {quickLinkGroups.map((group) => (
+            <section
+              key={group.id}
+              className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-600"
+            >
+              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-blue-600">
+                {group.label}
+              </div>
+              {group.description ? (
+                <p className="mt-2 text-xs leading-relaxed text-slate-500">{group.description}</p>
+              ) : null}
+              <div className="mt-3 flex flex-wrap gap-2">
+                {group.links.map((link) => (
+                  <QuickLink key={`${group.id}-${link.to}`} {...link} />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}
@@ -268,7 +410,7 @@ function Hero() {
   );
 }
 
-function Nav({ to, icon, children, end }) {
+function Nav({ to, icon: Icon, children, end }) {
   return (
     <NavLink
       to={to}
@@ -280,7 +422,8 @@ function Nav({ to, icon, children, end }) {
           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900")
       }
     >
-      {icon}{children}
+      {Icon ? <Icon size={18} strokeWidth={1.75} /> : null}
+      <span>{children}</span>
     </NavLink>
   );
 }
