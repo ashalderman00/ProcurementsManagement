@@ -99,6 +99,39 @@ function normalizeTextArray(value) {
   return [];
 }
 
+const WORK_ORDER_PRIORITIES = ['low', 'normal', 'high', 'urgent'];
+const WORK_ORDER_STATUSES = ['submitted', 'in-progress', 'scheduled', 'completed', 'cancelled'];
+const WORK_ORDER_PRIORITY_SET = new Set(WORK_ORDER_PRIORITIES);
+const WORK_ORDER_STATUS_SET = new Set(WORK_ORDER_STATUSES);
+
+function normalizeWorkOrderPriority(value) {
+  const priority = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (WORK_ORDER_PRIORITY_SET.has(priority)) return priority;
+  return 'normal';
+}
+
+function normalizeWorkOrderStatus(value) {
+  const status = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (WORK_ORDER_STATUS_SET.has(status)) return status;
+  return null;
+}
+
+function sanitizeWorkOrderRow(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    title: row.title,
+    details: row.details,
+    requesterName: row.requester_name,
+    requesterEmail: row.requester_email,
+    priority: row.priority,
+    dueDate: row.due_date,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 function parseDateValue(value) {
   if (!value) return null;
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
@@ -136,6 +169,12 @@ function normalizeEmail(value) {
   return String(value || '')
     .trim()
     .toLowerCase();
+}
+
+function isValidEmail(value) {
+  const email = String(value || '').trim();
+  if (!email) return false;
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
 }
 
 function normalizeRole(value, fallback = 'requester') {
@@ -443,6 +482,124 @@ app.get('/api/marketing/landing', async (_req, res) => {
     res.status(500).json({ error: 'failed to load marketing data' });
   }
 });
+
+// ===== work orders =====
+app.get(
+  '/api/work-orders',
+  authRequired,
+  roleRequired('admin', 'buyer', 'approver', 'finance'),
+  async (_req, res) => {
+    try {
+      const { rows } = await pool.query(
+        `SELECT id,title,details,requester_name,requester_email,priority,due_date,status,created_at,updated_at
+           FROM work_orders
+         ORDER BY created_at DESC`
+      );
+      res.json(rows.map((row) => sanitizeWorkOrderRow(row)));
+    } catch (error) {
+      console.error('work-orders.list.error', error);
+      res.status(500).json({ error: 'failed to load work orders' });
+    }
+  }
+);
+
+app.post('/api/work-orders', async (req, res) => {
+  try {
+    const {
+      title,
+      details,
+      requesterName,
+      requesterEmail,
+      priority,
+      dueDate,
+    } = req.body || {};
+
+    const normalizedTitle = typeof title === 'string' ? title.trim() : '';
+    if (!normalizedTitle) {
+      return res.status(400).json({ error: 'title required' });
+    }
+
+    const normalizedDetails =
+      details === undefined || details === null
+        ? null
+        : String(details).trim() || null;
+
+    const normalizedName =
+      requesterName === undefined || requesterName === null
+        ? null
+        : String(requesterName).trim() || null;
+
+    let normalizedEmail = null;
+    if (requesterEmail !== undefined && requesterEmail !== null && String(requesterEmail).trim()) {
+      const email = normalizeEmail(requesterEmail);
+      if (!isValidEmail(email)) {
+        return res.status(400).json({ error: 'invalid requester email' });
+      }
+      normalizedEmail = email;
+    }
+
+    const normalizedPriority = normalizeWorkOrderPriority(priority);
+    const { value: dueDateValue, valid: dueDateValid } = normalizeOrderDate(dueDate);
+    if (!dueDateValid) {
+      return res.status(400).json({ error: 'invalid due date' });
+    }
+
+    const metadata = {
+      source: 'landing',
+      userAgent: req.get('user-agent') || null,
+    };
+    const metadataJson = JSON.stringify(metadata);
+
+    const { rows } = await pool.query(
+      `INSERT INTO work_orders(title, details, requester_name, requester_email, priority, due_date, metadata)
+       VALUES ($1,$2,$3,$4,$5,$6,($7)::jsonb)
+       RETURNING id,title,details,requester_name,requester_email,priority,due_date,status,created_at,updated_at`,
+      [
+        normalizedTitle,
+        normalizedDetails,
+        normalizedName,
+        normalizedEmail,
+        normalizedPriority,
+        dueDateValue,
+        metadataJson,
+      ]
+    );
+
+    res.status(201).json(sanitizeWorkOrderRow(rows[0]));
+  } catch (error) {
+    console.error('work-orders.create.error', error);
+    res.status(500).json({ error: 'failed to submit work order' });
+  }
+});
+
+app.patch(
+  '/api/work-orders/:id/status',
+  authRequired,
+  roleRequired('admin', 'buyer', 'approver', 'finance'),
+  async (req, res) => {
+    const id = Number.parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid work order id' });
+
+    const status = normalizeWorkOrderStatus(req.body?.status);
+    if (!status) return res.status(400).json({ error: 'invalid status' });
+
+    try {
+      const { rows } = await pool.query(
+        `UPDATE work_orders
+            SET status=$1,
+                updated_at=NOW()
+          WHERE id=$2
+      RETURNING id,title,details,requester_name,requester_email,priority,due_date,status,created_at,updated_at`,
+        [status, id]
+      );
+      if (!rows.length) return res.status(404).json({ error: 'work order not found' });
+      res.json(sanitizeWorkOrderRow(rows[0]));
+    } catch (error) {
+      console.error('work-orders.update.error', error);
+      res.status(500).json({ error: 'failed to update work order' });
+    }
+  }
+);
 
 // ===== vendors =====
 app.get('/api/vendors', async (_req, res) => {

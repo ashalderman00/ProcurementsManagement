@@ -294,6 +294,12 @@ section {
   margin: 0;
 }
 
+.fallback-helper {
+  margin-top: 1.2rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
 .metric {
   padding: 1.2rem 1.4rem;
   border-radius: var(--radius-md);
@@ -524,6 +530,185 @@ h2 {
   display: grid;
   gap: 0.6rem;
   color: var(--text-muted);
+}
+
+.focus {
+  background: linear-gradient(
+    180deg,
+    rgba(37, 99, 235, 0.04),
+    rgba(14, 165, 233, 0.02)
+  );
+}
+
+.focus-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.focus-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-soft);
+  padding: 2rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.focus-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-strong);
+}
+
+.focus-value {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.focus-meta {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.work-order {
+  background: linear-gradient(
+    180deg,
+    rgba(37, 99, 235, 0.06),
+    rgba(14, 165, 233, 0.04)
+  );
+}
+
+.work-order-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-soft);
+  padding: 2.4rem;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.work-order-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.work-order-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.work-order-field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.work-order-field input,
+.work-order-field select,
+.work-order-field textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--surface-border-strong);
+  background: var(--surface-muted);
+  font-size: 0.95rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.work-order-field input:focus,
+.work-order-field select:focus,
+.work-order-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  background: #ffffff;
+}
+
+.work-order-field textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+.work-order-field-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-feedback {
+  margin: 0;
+  font-size: 0.92rem;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  background: rgba(37, 99, 235, 0.06);
+  color: var(--text-strong);
+}
+
+.form-feedback.success {
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--positive);
+}
+
+.form-feedback.error {
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+}
+
+.work-order-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.work-order-hints {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem 1.8rem;
+  border-radius: 20px;
+  background: var(--surface-muted);
+  border: 1px dashed rgba(37, 99, 235, 0.2);
+}
+
+.work-order-hints h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--text-strong);
+}
+
+.work-order-hints ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--text-muted);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.work-order-meta {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
+.work-order-meta a {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .rituals {
@@ -779,8 +964,13 @@ h2 {
   .program-grid,
   .guide-grid,
   .access-grid,
-  .role-columns {
+  .role-columns,
+  .focus-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .work-order-card {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -823,7 +1013,8 @@ h2 {
   .program-grid,
   .guide-grid,
   .access-grid,
-  .role-columns {
+  .role-columns,
+  .focus-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -839,6 +1030,10 @@ h2 {
 
   .role-helper {
     margin: 0 0 2rem 0;
+  }
+
+  .work-order-field-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

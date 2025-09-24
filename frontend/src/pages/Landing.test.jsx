@@ -28,7 +28,7 @@ describe('Landing role selector', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: /keep the workspace healthy/i,
+        name: /keep automations and access running/i,
       })
     ).toBeInTheDocument();
 
@@ -36,6 +36,16 @@ describe('Landing role selector', () => {
       screen.getByText(
         /live workspace data couldn't load, so you're seeing the standard program playbook\./i
       )
+    ).toBeInTheDocument();
+
+    expect(
+      await screen.findByText(
+        /live workspace metrics couldn't load, so you're seeing the standard benchmarks\./i
+      )
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getAllByText(/live focus signals will appear once workspace data syncs\./i)[0]
     ).toBeInTheDocument();
 
     expect(consoleError).toHaveBeenCalled();
