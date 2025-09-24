@@ -1,4 +1,11 @@
-import { Outlet, NavLink, useLocation, Link } from "react-router-dom";
+import {
+  NavLink,
+  Link,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import {
   LogOut,
   ShoppingCart,
@@ -15,6 +22,15 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import ThemeToggle from "./components/ThemeToggle";
 import { useAuth } from "./lib/auth";
+import Dashboard from "./pages/Dashboard";
+import PurchaseOrders from "./pages/PurchaseOrders";
+import Catalog from "./pages/Catalog";
+import Requests from "./pages/Requests";
+import RequestDetailRoute from "./pages/RequestDetailRoute";
+import Approvals from "./pages/Approvals";
+import Vendors from "./pages/Vendors";
+import Integrations from "./pages/Integrations";
+import Settings from "./pages/Settings";
 
 const NAV_ITEMS = {
   dashboard: {
@@ -305,7 +321,7 @@ export default function App() {
           </div>
         </header>
 
-        <AnimatedOutlet />
+        <AnimatedRoutes />
         <footer className="px-4 py-6 text-xs text-slate-500 md:px-8">
           © {new Date().getFullYear()} Procurement workspace
         </footer>
@@ -314,7 +330,7 @@ export default function App() {
   );
 }
 
-function AnimatedOutlet() {
+function AnimatedRoutes() {
   const location = useLocation();
   return (
     <div className="container mx-auto px-4 py-6 md:px-8">
@@ -322,14 +338,89 @@ function AnimatedOutlet() {
         <motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0, transition: { duration: .24, ease: 'easeOut' } }}
-          exit={{ opacity: 0, y: -6, transition: { duration: .18 } }}
-          className="space-y-6"
+          animate={{ opacity: 1, y: 0, transition: { duration: 0.24, ease: "easeOut" } }}
+          exit={{ opacity: 0, y: -6, transition: { duration: 0.18 } }}
         >
-          <Hero />
-          <Outlet />
+          <Routes location={location}>
+            <Route
+              index
+              element={
+                <PageShell>
+                  <Dashboard />
+                </PageShell>
+              }
+            />
+            <Route
+              path="purchase-orders"
+              element={
+                <PageShell>
+                  <PurchaseOrders />
+                </PageShell>
+              }
+            />
+            <Route
+              path="catalog"
+              element={
+                <PageShell>
+                  <Catalog />
+                </PageShell>
+              }
+            />
+            <Route
+              path="requests"
+              element={
+                <PageShell>
+                  <Requests />
+                </PageShell>
+              }
+            >
+              <Route path=":id" element={<RequestDetailRoute />} />
+            </Route>
+            <Route
+              path="approvals"
+              element={
+                <PageShell>
+                  <Approvals />
+                </PageShell>
+              }
+            />
+            <Route
+              path="vendors"
+              element={
+                <PageShell>
+                  <Vendors />
+                </PageShell>
+              }
+            />
+            <Route
+              path="integrations"
+              element={
+                <PageShell>
+                  <Integrations />
+                </PageShell>
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <PageShell>
+                  <Settings />
+                </PageShell>
+              }
+            />
+            <Route path="*" element={<Navigate to="/app" replace />} />
+          </Routes>
         </motion.div>
       </AnimatePresence>
+    </div>
+  );
+}
+
+function PageShell({ children }) {
+  return (
+    <div className="space-y-6">
+      <Hero />
+      {children}
     </div>
   );
 }
