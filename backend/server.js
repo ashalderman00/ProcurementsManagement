@@ -83,6 +83,51 @@ function normalizeOrderDate(input) {
   return { value: date.toISOString().slice(0, 10), valid: true };
 }
 
+function normalizeTextArray(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (value === null || value === undefined || value === '') return [];
+  if (typeof value === 'string') {
+    return value
+      .replace(/^[{]|[}]$/g, '')
+      .split(',')
+      .map((entry) => entry.trim().replace(/^"|"$/g, ''))
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function parseDateValue(value) {
+  if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function latestDate(values) {
+  let latest = null;
+  for (const value of values) {
+    const date = parseDateValue(value);
+    if (!date) continue;
+    if (!latest || date > latest) latest = date;
+  }
+  return latest;
+}
+
+function isOlderThan(value, days) {
+  const date = parseDateValue(value);
+  if (!date) return false;
+  const threshold = Date.now() - days * 24 * 60 * 60 * 1000;
+  return date.getTime() < threshold;
+}
+
+function average(values) {
+  if (!Array.isArray(values) || !values.length) return null;
+  const filtered = values.filter((value) => Number.isFinite(value));
+  if (!filtered.length) return null;
+  const total = filtered.reduce((sum, value) => sum + value, 0);
+  return total / filtered.length;
+}
+
 // ===== auth helpers =====
 function signToken(user) {
   return jwt.sign(
@@ -416,7 +461,9 @@ app.patch(
 // ===== categories (kept) =====
 app.get('/api/categories', async (_req, res) => {
   const { rows } = await pool.query(
-    'SELECT id,name,monthly_budget FROM categories ORDER BY name'
+    `SELECT id, name, monthly_budget, parent_id, contract_number, preferred_suppliers, coverage_score, last_reviewed_at
+       FROM categories
+      ORDER BY name`
   );
   res.json(rows);
 });
@@ -425,16 +472,397 @@ app.post(
   authRequired,
   roleRequired('admin', 'approver'),
   async (req, res) => {
-    const { name, monthly_budget = 0 } = req.body || {};
+    const {
+      name,
+      monthly_budget = 0,
+      parent_id = null,
+      contract_number,
+      preferred_suppliers = [],
+      coverage_score = 0,
+    } = req.body || {};
+
     if (!name) return res.status(400).json({ error: 'name required' });
-    const budget = Number(monthly_budget) || 0;
-    const { rows } = await pool.query(
-      'INSERT INTO categories(name,monthly_budget) VALUES($1,$2) RETURNING *',
-      [name.trim(), budget]
-    );
-    res.status(201).json(rows[0]);
+    if (!contract_number)
+      return res.status(400).json({ error: 'contract_number required' });
+
+    const budget = Number(monthly_budget);
+    if (Number.isNaN(budget) || budget < 0)
+      return res.status(400).json({ error: 'invalid monthly_budget' });
+
+    const parentId =
+      parent_id === null || parent_id === '' ? null : Number(parent_id);
+    if (parentId !== null && Number.isNaN(parentId))
+      return res.status(400).json({ error: 'invalid parent_id' });
+
+    const suppliers = Array.isArray(preferred_suppliers)
+      ? preferred_suppliers.map((value) => String(value).trim()).filter(Boolean)
+      : [];
+    if (!suppliers.length)
+      return res.status(400).json({ error: 'preferred_suppliers required' });
+
+    let coverage = Number(coverage_score);
+    if (coverage_score === '' || coverage_score === null || coverage_score === undefined)
+      coverage = 0;
+    if (Number.isNaN(coverage) || coverage < 0 || coverage > 100)
+      return res
+        .status(400)
+        .json({ error: 'coverage_score must be between 0 and 100' });
+
+    try {
+      const { rows } = await pool.query(
+        'INSERT INTO categories(name,monthly_budget,parent_id,contract_number,preferred_suppliers,coverage_score) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',
+        [name.trim(), budget, parentId, contract_number.trim(), suppliers, coverage]
+      );
+      res.status(201).json(rows[0]);
+    } catch (error) {
+      console.error('category.create.error', error);
+      const message = String(error.message || '').toLowerCase();
+      if (message.includes('duplicate'))
+        return res.status(409).json({ error: 'category already exists' });
+      if (message.includes('foreign key'))
+        return res.status(400).json({ error: 'parent category not found' });
+      res.status(500).json({ error: 'failed to create category' });
+    }
   }
 );
+
+app.get('/api/catalogue/overview', async (_req, res) => {
+  try {
+    const [categoryRes, itemRes, coverageRes, feedRes, punchoutRes] =
+      await Promise.all([
+        pool.query(
+          `SELECT c.id, c.name, c.monthly_budget, c.parent_id, p.name AS parent_name,
+                  c.contract_number, c.preferred_suppliers, c.coverage_score, c.last_reviewed_at
+             FROM categories c
+             LEFT JOIN categories p ON p.id = c.parent_id
+            ORDER BY COALESCE(p.name, c.name), c.name`
+        ),
+        pool.query(
+          `SELECT i.id, i.category_id, i.name, i.sku, i.unit_of_measure, i.base_price, i.currency,
+                  i.preferred_supplier, i.contract_number, i.pricing_tiers, i.status, i.last_reviewed_at,
+                  i.coverage_notes, c.name AS category_name
+             FROM catalog_items i
+             JOIN categories c ON c.id = i.category_id
+            ORDER BY c.name, i.name`
+        ),
+        pool.query(
+          `SELECT cc.category_id, bu.name AS business_unit, cc.coverage_level
+             FROM catalog_category_coverage cc
+             JOIN catalog_business_units bu ON bu.id = cc.business_unit_id`
+        ),
+        pool.query(
+          `SELECT f.id, f.category_id, f.supplier, f.feed_name, f.format, f.status,
+                  f.last_imported_at, f.next_refresh_due, f.pending_changes, f.requires_finance_review,
+                  f.change_log_url, c.name AS category_name
+             FROM catalog_vendor_feeds f
+             LEFT JOIN categories c ON c.id = f.category_id
+            ORDER BY f.feed_name`
+        ),
+        pool.query(
+          `SELECT pc.id, pc.category_id, pc.supplier, pc.status, pc.sso_status, pc.cart_success_rate,
+                  pc.last_transaction_at, pc.coverage_scope, pc.notes, c.name AS category_name
+             FROM punchout_connections pc
+             LEFT JOIN categories c ON c.id = pc.category_id
+            ORDER BY pc.supplier`
+        ),
+      ]);
+
+    const categories = categoryRes.rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      parentId: row.parent_id,
+      parentName: row.parent_name || null,
+      monthlyBudget: Number(row.monthly_budget) || 0,
+      contractNumber: row.contract_number,
+      preferredSuppliers: normalizeTextArray(row.preferred_suppliers),
+      coverageScore: row.coverage_score !== null ? Number(row.coverage_score) : 0,
+      lastReviewedAt: row.last_reviewed_at,
+    }));
+
+    const items = itemRes.rows.map((row) => ({
+      id: row.id,
+      categoryId: row.category_id,
+      categoryName: row.category_name,
+      name: row.name,
+      sku: row.sku,
+      unitOfMeasure: row.unit_of_measure,
+      basePrice: Number(row.base_price),
+      currency: row.currency,
+      preferredSupplier: row.preferred_supplier,
+      contractNumber: row.contract_number,
+      pricingTiers: row.pricing_tiers || {},
+      status: row.status,
+      lastReviewedAt: row.last_reviewed_at,
+      coverageNotes: row.coverage_notes,
+    }));
+
+    const coverageRows = coverageRes.rows.map((row) => ({
+      categoryId: row.category_id,
+      businessUnit: row.business_unit,
+      coverageLevel: row.coverage_level,
+    }));
+
+    const vendorFeeds = feedRes.rows.map((row) => ({
+      id: row.id,
+      categoryId: row.category_id,
+      categoryName: row.category_name,
+      supplier: row.supplier,
+      feedName: row.feed_name,
+      format: row.format,
+      status: row.status,
+      lastImportedAt: row.last_imported_at,
+      nextRefreshDue: row.next_refresh_due,
+      pendingChanges: Number(row.pending_changes) || 0,
+      requiresFinanceReview: Boolean(row.requires_finance_review),
+      changeLogUrl: row.change_log_url,
+    }));
+
+    const punchoutConnections = punchoutRes.rows.map((row) => ({
+      id: row.id,
+      categoryId: row.category_id,
+      categoryName: row.category_name,
+      supplier: row.supplier,
+      status: row.status,
+      ssoStatus: row.sso_status,
+      cartSuccessRate:
+        row.cart_success_rate === null ? null : Number(row.cart_success_rate),
+      lastTransactionAt: row.last_transaction_at,
+      coverageScope: row.coverage_scope,
+      notes: row.notes,
+    }));
+
+    const itemsByCategory = new Map();
+    for (const item of items) {
+      if (!itemsByCategory.has(item.categoryId))
+        itemsByCategory.set(item.categoryId, []);
+      itemsByCategory.get(item.categoryId).push(item);
+    }
+
+    const coverageByCategory = new Map();
+    for (const row of coverageRows) {
+      if (!coverageByCategory.has(row.categoryId))
+        coverageByCategory.set(row.categoryId, []);
+      coverageByCategory.get(row.categoryId).push({
+        businessUnit: row.businessUnit,
+        level: row.coverageLevel,
+      });
+    }
+
+    const feedsByCategory = new Map();
+    for (const feed of vendorFeeds) {
+      if (!feedsByCategory.has(feed.categoryId))
+        feedsByCategory.set(feed.categoryId, []);
+      feedsByCategory.get(feed.categoryId).push(feed);
+    }
+
+    const punchoutByCategory = new Map();
+    for (const conn of punchoutConnections) {
+      if (!punchoutByCategory.has(conn.categoryId))
+        punchoutByCategory.set(conn.categoryId, []);
+      punchoutByCategory.get(conn.categoryId).push(conn);
+    }
+
+    const categoriesEnriched = categories.map((category) => {
+      const itemsForCategory = itemsByCategory.get(category.id) || [];
+      const coverage = coverageByCategory.get(category.id) || [];
+      const feeds = feedsByCategory.get(category.id) || [];
+      const connectors = punchoutByCategory.get(category.id) || [];
+
+      const unitsOfMeasure = Array.from(
+        new Set(itemsForCategory.map((item) => item.unitOfMeasure))
+      ).sort();
+
+      const pricingTierCount = itemsForCategory.reduce((sum, item) => {
+        const tiers =
+          item.pricingTiers && typeof item.pricingTiers === 'object'
+            ? Object.keys(item.pricingTiers).length
+            : 0;
+        return sum + tiers;
+      }, 0);
+
+      const pendingChanges = feeds.reduce(
+        (sum, feed) => sum + (Number(feed.pendingChanges) || 0),
+        0
+      );
+
+      const requiresFinanceReview = feeds.some(
+        (feed) => feed.requiresFinanceReview && feed.pendingChanges > 0
+      );
+
+      const lastUpdatedAt = latestDate([
+        category.lastReviewedAt,
+        ...itemsForCategory.map((item) => item.lastReviewedAt),
+        ...feeds.map((feed) => feed.lastImportedAt),
+        ...connectors.map((conn) => conn.lastTransactionAt),
+      ]);
+
+      const punchoutStatus = connectors.length
+        ? {
+            total: connectors.length,
+            healthy: connectors.filter(
+              (conn) =>
+                conn.status === 'active' && conn.ssoStatus === 'healthy'
+            ).length,
+            issues: connectors.filter(
+              (conn) =>
+                conn.status !== 'active' || conn.ssoStatus !== 'healthy'
+            ).length,
+          }
+        : null;
+
+      return {
+        id: category.id,
+        name: category.name,
+        parentId: category.parentId,
+        parentName: category.parentName,
+        path: category.parentName
+          ? [category.parentName, category.name]
+          : [category.name],
+        monthlyBudget: category.monthlyBudget,
+        contractNumber: category.contractNumber,
+        preferredSuppliers: category.preferredSuppliers,
+        coverageScore: category.coverageScore,
+        lastReviewedAt: category.lastReviewedAt,
+        lastUpdatedAt,
+        itemCount: itemsForCategory.length,
+        activeItemCount: itemsForCategory.filter((item) => item.status === 'active')
+          .length,
+        unitsOfMeasure,
+        pricingTierCount,
+        pendingChanges,
+        requiresFinanceReview,
+        coverage,
+        feedCount: feeds.length,
+        punchoutStatus,
+      };
+    });
+
+    const feedsRequiringReview = vendorFeeds.filter(
+      (feed) => feed.requiresFinanceReview && feed.pendingChanges > 0
+    ).length;
+
+    const punchoutSuccess = punchoutConnections
+      .map((conn) =>
+        conn.cartSuccessRate === null ? null : Number(conn.cartSuccessRate)
+      )
+      .filter((value) => Number.isFinite(value));
+    const punchoutHealthAvg = average(punchoutSuccess);
+    const punchoutHealth =
+      punchoutHealthAvg === null
+        ? null
+        : Math.round(punchoutHealthAvg * 10) / 10;
+
+    const staleCategories = categoriesEnriched.filter((cat) =>
+      isOlderThan(cat.lastReviewedAt, 45)
+    ).length;
+    const staleItems = items.filter((item) =>
+      isOlderThan(item.lastReviewedAt, 45)
+    ).length;
+
+    const summary = {
+      activeCategories: categoriesEnriched.length,
+      totalItems: items.length,
+      feedsRequiringReview,
+      punchoutConnections: punchoutConnections.length,
+      punchoutHealth,
+      staleRecords: {
+        categories: staleCategories,
+        items: staleItems,
+      },
+    };
+
+    const businessUnitStats = new Map();
+    for (const row of coverageRows) {
+      const key = row.businessUnit;
+      const entry =
+        businessUnitStats.get(key) ||
+        { businessUnit: key, full: 0, partial: 0, none: 0, total: 0 };
+      if (row.coverageLevel === 'full') entry.full += 1;
+      else if (row.coverageLevel === 'partial') entry.partial += 1;
+      else entry.none += 1;
+      entry.total += 1;
+      businessUnitStats.set(key, entry);
+    }
+
+    const businessUnitCoverage = Array.from(businessUnitStats.values()).map(
+      (entry) => ({
+        ...entry,
+        fullPercent: entry.total
+          ? Math.round((entry.full / entry.total) * 100)
+          : 0,
+        gaps: entry.partial + entry.none,
+      })
+    );
+
+    const cadenceValues = vendorFeeds
+      .map((feed) => {
+        const last = parseDateValue(feed.lastImportedAt);
+        const next = parseDateValue(feed.nextRefreshDue);
+        if (!last || !next) return null;
+        const diff =
+          (next.getTime() - last.getTime()) / (1000 * 60 * 60 * 24);
+        return Number.isFinite(diff) && diff > 0 ? diff : null;
+      })
+      .filter((value) => value !== null);
+    const reviewCadence = average(cadenceValues);
+    const reviewCadenceDays =
+      reviewCadence === null ? null : Math.round(reviewCadence * 10) / 10;
+
+    const priceVarianceAlerts = items.filter(
+      (item) =>
+        typeof item.coverageNotes === 'string' &&
+        item.coverageNotes.toLowerCase().includes('variance')
+    ).length;
+
+    const connectorsNeedingAttention = punchoutConnections.filter(
+      (conn) => conn.status !== 'active' || conn.ssoStatus !== 'healthy'
+    ).length;
+
+    const coverageScoreAverage =
+      categoriesEnriched.length === 0
+        ? null
+        : Math.round(
+            (categoriesEnriched.reduce(
+              (sum, cat) => sum + Number(cat.coverageScore || 0),
+              0
+            ) /
+              categoriesEnriched.length) *
+              10
+          ) / 10;
+
+    const analytics = {
+      businessUnitCoverage,
+      coverageScoreAverage,
+      reviewCadenceDays,
+      priceVarianceAlerts,
+      financeReviewQueue: feedsRequiringReview,
+      staleContent: {
+        categories: staleCategories,
+        items: staleItems,
+      },
+      connectorsNeedingAttention,
+      integrationExports: {
+        automatedFeeds: vendorFeeds.filter((feed) =>
+          ['published', 'scheduled'].includes(feed.status)
+        ).length,
+        punchout: punchoutConnections.length,
+      },
+      unitsWithGaps: businessUnitCoverage.filter((entry) => entry.gaps > 0).length,
+    };
+
+    res.json({
+      summary,
+      categories: categoriesEnriched,
+      items,
+      vendorFeeds,
+      punchoutConnections,
+      analytics,
+    });
+  } catch (error) {
+    console.error('catalogue.overview.error', error);
+    res.status(500).json({ error: 'failed to load catalogue overview' });
+  }
+});
 
 // ===== approval rules (policy data) =====
 app.get(
