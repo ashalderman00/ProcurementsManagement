@@ -1,12 +1,18 @@
 import { motion } from "framer-motion";
 
-export function Card({children, className=""}) {
-  return <motion.div
-    initial={{ opacity: 0, y: 8 }}
-    whileInView={{ opacity: 1, y: 0, transition: { duration: .24 } }}
-    viewport={{ once: true, margin: "-20%" }}
-    className={`card hover-card ${className}`}
-  >{children}</motion.div>;
+export function Card({ children, className = "", ...rest }) {
+  const composedClassName = ["card hover-card", className].filter(Boolean).join(" ");
+  return (
+    <motion.div
+      {...rest}
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0, transition: { duration: 0.24 } }}
+      viewport={{ once: true, margin: "-20%" }}
+      className={composedClassName}
+    >
+      {children}
+    </motion.div>
+  );
 }
 export function CardHeader({title, subtitle, actions}) {
   return (
