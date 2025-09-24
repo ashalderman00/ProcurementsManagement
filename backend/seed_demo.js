@@ -18,12 +18,14 @@ async function run(){
     ('Staples','low','active','https://staples.com')
     ON CONFLICT (name) DO NOTHING;`);
 
-  // one admin + one approver + one requester (if you haven’t signed up yet)
+  // seed core roles so demo environments have example users
   const bcrypt = require('bcryptjs');
   const pass = await bcrypt.hash('demo1234',10);
   await pool.query(`INSERT INTO users(email,password_hash,role) VALUES
     ('admin@demo.co',$1,'admin'),
     ('approver@demo.co',$1,'approver'),
+    ('buyer@demo.co',$1,'buyer'),
+    ('finance@demo.co',$1,'finance'),
     ('alex@demo.co',$1,'requester')
     ON CONFLICT (email) DO NOTHING;`, [pass]);
 

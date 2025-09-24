@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   NavLink,
   Link,
@@ -82,6 +83,19 @@ const NAV_ITEMS = {
     icon: Cog,
   },
 };
+
+const ROLE_NAV_ITEMS = {
+  admin: Object.keys(NAV_ITEMS),
+  approver: ["dashboard", "approvals", "requests"],
+  buyer: ["dashboard", "purchaseOrders", "catalog", "requests", "vendors"],
+  finance: ["dashboard", "purchaseOrders", "approvals", "integrations"],
+  requester: ["dashboard", "catalog", "requests"],
+};
+
+function getNavKeysForRole(role) {
+  if (!role) return ROLE_NAV_ITEMS.requester;
+  return ROLE_NAV_ITEMS[role] || ROLE_NAV_ITEMS.requester;
+}
 
 const NAV_GROUPS = [
   {
@@ -212,6 +226,8 @@ const HERO_META = {
 
 export default function App() {
   const { user, logout: signOut } = useAuth();
+  const navKeys = useMemo(() => getNavKeysForRole(user?.role), [user?.role]);
+  const allowedNavSet = useMemo(() => new Set(navKeys), [navKeys]);
 
   function handleLogout() {
     signOut();
@@ -226,11 +242,13 @@ export default function App() {
             <span>Procurement workspace</span>
           </Link>
           <nav className="workspace-nav" aria-label="Workspace navigation">
-            {Object.values(NAV_ITEMS).map((item) => (
-              <Nav key={item.to} to={item.to} end={item.end} icon={item.icon}>
-                {item.label}
-              </Nav>
-            ))}
+            {Object.entries(NAV_ITEMS)
+              .filter(([key]) => allowedNavSet.has(key))
+              .map(([key, item]) => (
+                <Nav key={key} to={item.to} end={item.end} icon={item.icon}>
+                  {item.label}
+                </Nav>
+              ))}
           </nav>
           <div className="workspace-actions">
             {user ? (
@@ -268,6 +286,7 @@ export default function App() {
             <aside className="workspace-sidebar" aria-label="Workspace sections">
               {NAV_GROUPS.map((group) => {
                 const groupItems = group.items
+                  .filter((key) => allowedNavSet.has(key))
                   .map((key) => NAV_ITEMS[key])
                   .filter(Boolean);
 
@@ -297,9 +316,9 @@ export default function App() {
             </aside>
             <div className="workspace-content">
               <section className="workspace-hero-wrapper">
-                <Hero />
+                <Hero allowedNavKeys={allowedNavSet} />
               </section>
-              <AnimatedRoutes />
+              <AnimatedRoutes allowedNavKeys={allowedNavSet} />
             </div>
           </div>
         </div>
@@ -312,8 +331,14 @@ export default function App() {
   );
 }
 
-function AnimatedRoutes() {
+function AnimatedRoutes({ allowedNavKeys }) {
   const location = useLocation();
+  const navSet =
+    allowedNavKeys && typeof allowedNavKeys.has === "function"
+      ? allowedNavKeys
+      : new Set();
+  const guard = (navKey, element) =>
+    navSet.has(navKey) ? element : <Navigate to="/app" replace />;
   return (
     <div className="workspace-route-area">
       <AnimatePresence mode="wait">
@@ -327,69 +352,79 @@ function AnimatedRoutes() {
           <Routes location={location}>
             <Route
               index
-              element={
+              element={guard(
+                "dashboard",
                 <PageShell>
                   <Dashboard />
                 </PageShell>
-              }
+              )}
             />
             <Route
               path="purchase-orders"
-              element={
+              element={guard(
+                "purchaseOrders",
                 <PageShell>
                   <PurchaseOrders />
                 </PageShell>
-              }
+              )}
             />
             <Route
               path="catalog"
-              element={
+              element={guard(
+                "catalog",
                 <PageShell>
                   <Catalog />
                 </PageShell>
-              }
+              )}
             />
             <Route
               path="requests"
-              element={
+              element={guard(
+                "requests",
                 <PageShell>
                   <Requests />
                 </PageShell>
-              }
+              )}
             >
-              <Route path=":id" element={<RequestDetailRoute />} />
+              {navSet.has("requests") ? (
+                <Route path=":id" element={<RequestDetailRoute />} />
+              ) : null}
             </Route>
             <Route
               path="approvals"
-              element={
+              element={guard(
+                "approvals",
                 <PageShell>
                   <Approvals />
                 </PageShell>
-              }
+              )}
             />
             <Route
               path="vendors"
-              element={
+              element={guard(
+                "vendors",
                 <PageShell>
                   <Vendors />
                 </PageShell>
-              }
+              )}
             />
             <Route
               path="integrations"
-              element={
+              element={guard(
+                "integrations",
                 <PageShell>
                   <Integrations />
                 </PageShell>
-              }
+              )}
             />
             <Route
               path="settings"
-              element={
+              element={guard(
+                "settings",
                 <PageShell>
                   <Settings />
                 </PageShell>
-              }
+              )}
             />
             <Route path="*" element={<Navigate to="/app" replace />} />
           </Routes>
@@ -403,9 +438,13 @@ function PageShell({ children }) {
   return <section className="workspace-surface">{children}</section>;
 }
 
-function Hero() {
+function Hero({ allowedNavKeys }) {
   const { pathname } = useLocation();
   const { user } = useAuth();
+  const navSet =
+    allowedNavKeys && typeof allowedNavKeys.has === "function"
+      ? allowedNavKeys
+      : new Set(getNavKeysForRole(user?.role));
   const segments = pathname.replace(/^\/+/, "").split("/");
   let key = segments[0] || "dashboard";
   if (key === "app") {
@@ -419,6 +458,7 @@ function Hero() {
       const group = QUICK_LINK_GROUPS[groupKey];
       if (!group) return null;
       const links = group.items
+        .filter((itemKey) => navSet.has(itemKey))
         .map((itemKey) => NAV_ITEMS[itemKey])
         .filter(Boolean)
         .map((item) => ({
