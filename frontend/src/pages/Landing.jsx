@@ -174,33 +174,6 @@ const programPillars = [
   },
 ];
 
-const rituals = [
-  {
-    time: '08:30',
-    title: 'Morning brief',
-    description:
-      'Operations reviews new intake, flags blockers, and assigns first responses.',
-  },
-  {
-    time: '11:00',
-    title: 'Cross-functional stand-up',
-    description:
-      'Finance, legal, and security sync on escalations directly in the workspace.',
-  },
-  {
-    time: '15:00',
-    title: 'Renewal sweep',
-    description:
-      'Procurement owners confirm prep work for 30/60/90-day renewals.',
-  },
-  {
-    time: 'Friday',
-    title: 'Program review',
-    description:
-      'Metrics, automation health, and policy updates are published to leadership.',
-  },
-];
-
 const accessSteps = [
   {
     title: 'Create your account',
@@ -336,37 +309,6 @@ export default function Landing() {
                       <li key={point}>{point}</li>
                     ))}
                   </ul>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="rituals" aria-labelledby="rituals-heading">
-          <div className="shell">
-            <div className="section-heading">
-              <span className="kicker">Operating rhythm</span>
-              <h2 id="rituals-heading">Daily cadence that keeps us aligned</h2>
-              <p>
-                A steady rhythm ensures intake stays healthy, approvals move,
-                and renewals never surprise the business.
-              </p>
-            </div>
-            <div className="timeline" role="list">
-              {rituals.map((item) => (
-                <article
-                  className="timeline-row"
-                  role="listitem"
-                  key={item.title}
-                >
-                  <div className="timeline-marker">
-                    <span className="timeline-dot" />
-                    <span className="timeline-time">{item.time}</span>
-                  </div>
-                  <div className="timeline-content">
-                    <h3>{item.title}</h3>
-                    <p>{item.description}</p>
-                  </div>
                 </article>
               ))}
             </div>
