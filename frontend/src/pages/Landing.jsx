@@ -2,23 +2,9 @@ import { useEffect, useState } from 'react';
 import { apiGet } from '../lib/api';
 
 const navLinks = [
-  { label: 'Overview', href: '#overview' },
   { label: 'Program', href: '#program' },
   { label: 'Roles', href: '#roles' },
-  { label: 'Resources', href: '#resources' },
   { label: 'Access', href: '#access' },
-];
-
-const HERO_METRIC_TEMPLATE = [
-  { label: 'Spend under management', value: '—' },
-  { label: 'Median cycle time', value: '—' },
-  { label: 'Policy adherence', value: '—' },
-];
-
-const FOCUS_SIGNAL_TEMPLATE = [
-  { label: 'New intake', value: '—', meta: 'Loading' },
-  { label: 'Approvals today', value: '—', meta: 'Loading' },
-  { label: 'Renewals in 30 days', value: '—', meta: 'Loading' },
 ];
 
 const ROLE_VIEW_TEMPLATE = [
@@ -155,24 +141,6 @@ function asTrimmedString(value) {
   return String(value).trim();
 }
 
-const approvalsQueue = [
-  {
-    name: 'Marketing automation expansion',
-    owner: 'Finance review',
-    status: 'Due today',
-  },
-  {
-    name: 'Global payroll renewal',
-    owner: 'Legal & security',
-    status: 'Docs in progress',
-  },
-  {
-    name: 'Data warehouse contract',
-    owner: 'CFO approval',
-    status: 'Next in queue',
-  },
-];
-
 const programPillars = [
   {
     title: 'Intake discipline',
@@ -233,28 +201,6 @@ const rituals = [
   },
 ];
 
-const quickGuides = [
-  {
-    title: 'Workspace orientation',
-    description:
-      'A 10-minute walkthrough that introduces intake, approvals, and the vendor desk.',
-    action: 'Open guide',
-  },
-  {
-    title: 'Intake checklist',
-    description:
-      'Interactive readiness checklist covering budget, risk, and rollout details to collect before intake.',
-    action: 'Open checklist',
-    href: '/resources/intake-checklist',
-  },
-  {
-    title: 'Renewal preparation',
-    description:
-      'Template to plan vendor checkpoints, benchmarks, and stakeholder updates.',
-    action: 'Review template',
-  },
-];
-
 const accessSteps = [
   {
     title: 'Create your account',
@@ -271,13 +217,6 @@ const accessSteps = [
     action: { label: 'Sign in', href: '/login', tone: 'outline' },
   },
   {
-    title: 'Complete orientation',
-    description:
-      'Before managing intake, review the quick orientation so you understand routing, approvals, and renewals.',
-    meta: '20 minutes',
-    action: { label: 'Start orientation', href: '#resources', tone: 'link' },
-  },
-  {
     title: 'Review intake checklist',
     description:
       'Align requesters on the budget, risk, and rollout details Procurement expects before they submit.',
@@ -291,12 +230,6 @@ const accessSteps = [
 ];
 
 export default function Landing() {
-  const [heroMetrics, setHeroMetrics] = useState(() =>
-    HERO_METRIC_TEMPLATE.map((metric) => ({ ...metric }))
-  );
-  const [focusSignals, setFocusSignals] = useState(() =>
-    FOCUS_SIGNAL_TEMPLATE.map((signal) => ({ ...signal }))
-  );
   const [roleViews, setRoleViews] = useState([]);
   const [selectedRole, setSelectedRole] = useState(null);
   const [landingDataError, setLandingDataError] = useState(false);
@@ -308,31 +241,10 @@ export default function Landing() {
       try {
         const data = await apiGet('/api/marketing/landing');
         if (ignore) return;
-        const metrics =
-          Array.isArray(data.heroMetrics) && data.heroMetrics.length
-            ? data.heroMetrics
-            : HERO_METRIC_TEMPLATE;
-        const signals =
-          Array.isArray(data.focusSignals) && data.focusSignals.length
-            ? data.focusSignals
-            : FOCUS_SIGNAL_TEMPLATE;
         const rolesSource = Array.isArray(data.roleViews) ? data.roleViews : [];
         const normalizedRoles = rolesSource
           .map((role) => normalizeRoleView(role))
           .filter(Boolean);
-        setHeroMetrics(
-          metrics.map((metric) => ({
-            label: metric.label ?? '—',
-            value: metric.value ?? '—',
-          }))
-        );
-        setFocusSignals(
-          signals.map((signal) => ({
-            label: signal.label ?? '—',
-            value: signal.value ?? '—',
-            meta: signal.meta ?? '—',
-          }))
-        );
         if (normalizedRoles.length) {
           setRoleViews(normalizedRoles);
           setUsingFallbackRoles(false);
@@ -344,14 +256,6 @@ export default function Landing() {
       } catch (error) {
         if (ignore) return;
         console.error('Failed to load landing data', error);
-        setHeroMetrics(HERO_METRIC_TEMPLATE.map((metric) => ({ ...metric })));
-        setFocusSignals(
-          FOCUS_SIGNAL_TEMPLATE.map((signal) => ({
-            ...signal,
-            value: '—',
-            meta: 'Live data unavailable',
-          }))
-        );
         setRoleViews(cloneRoleTemplate());
         setUsingFallbackRoles(true);
         setLandingDataError(true);
@@ -408,84 +312,6 @@ export default function Landing() {
       </header>
 
       <main>
-        <section className="hero" id="overview" aria-labelledby="hero-title">
-          <div className="shell hero-shell">
-            <div className="hero-layout">
-              <div className="hero-copy">
-                <span className="hero-eyebrow">Procurement Manager</span>
-                <h1 className="hero-title" id="hero-title">
-                  The control center for procurement operations
-                </h1>
-                <p className="hero-description">
-                  Procurement Manager is the internal workspace for intake,
-                  approvals, and vendor management. It is built for the teams
-                  already running the program—clarity first, marketing last.
-                </p>
-                <div className="hero-actions">
-                  <a className="button primary" href="/login">
-                    Sign in
-                  </a>
-                  <a className="button outline" href="/signup">
-                    Create account
-                  </a>
-                  <a className="text-link" href="#resources">
-                    View orientation
-                  </a>
-                </div>
-                <dl className="hero-metrics">
-                  {heroMetrics.map((metric) => (
-                    <div className="metric" key={metric.label}>
-                      <dt>{metric.value}</dt>
-                      <dd>{metric.label}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-              <aside className="hero-pane" aria-label="Workspace snapshot">
-                <div className="brief-card">
-                  <div className="brief-header">
-                    <span className="brief-title">Today at a glance</span>
-                    <span className="brief-date">Wednesday · 09:30</span>
-                  </div>
-                  <ul className="brief-list">
-                    {focusSignals.map((item) => (
-                      <li className="brief-item" key={item.label}>
-                        <span className="brief-label">{item.label}</span>
-                        <span className="brief-value">{item.value}</span>
-                        <span className="brief-meta">{item.meta}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="brief-foot">
-                    Operations steady · Next review 15:00
-                  </div>
-                </div>
-                <div className="queue-card">
-                  <div className="queue-header">
-                    <h3>Approvals in motion</h3>
-                    <span className="queue-pill">Live</span>
-                  </div>
-                  <ul className="queue-list">
-                    {approvalsQueue.map((item) => (
-                      <li className="queue-row" key={item.name}>
-                        <div className="queue-info">
-                          <span className="queue-name">{item.name}</span>
-                          <span className="queue-meta">
-                            {item.owner} · {item.status}
-                          </span>
-                        </div>
-                        <button type="button" className="queue-action">
-                          Open
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </aside>
-            </div>
-          </div>
-        </section>
-
         <section
           className="program"
           id="program"
@@ -638,40 +464,6 @@ export default function Landing() {
                 </div>
               )}
             </article>
-          </div>
-        </section>
-
-        <section
-          className="guides"
-          id="resources"
-          aria-labelledby="guides-heading"
-        >
-          <div className="shell">
-            <div className="section-heading">
-              <span className="kicker">Resources</span>
-              <h2 id="guides-heading">Materials to keep everyone aligned</h2>
-              <p>
-                These guides live in the workspace library. Share them in
-                onboarding invites or quarterly enablement sessions.
-              </p>
-            </div>
-            <div className="guide-grid">
-              {quickGuides.map((guide) => (
-                <article className="guide-card" key={guide.title}>
-                  <h3>{guide.title}</h3>
-                  <p>{guide.description}</p>
-                  {guide.href ? (
-                    <a className="text-button" href={guide.href}>
-                      {guide.action}
-                    </a>
-                  ) : (
-                    <button type="button" className="text-button">
-                      {guide.action}
-                    </button>
-                  )}
-                </article>
-              ))}
-            </div>
           </div>
         </section>
 
