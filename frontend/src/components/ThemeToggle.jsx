@@ -8,7 +8,7 @@ export default function ThemeToggle(){
   return (
     <button onClick={toggle}
       title="Toggle theme"
-      className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800">
+      className="workspace-theme-toggle">
       {isDark ? '☀️ Light' : '🌙 Dark'}
     </button>
   );
