@@ -64,6 +64,51 @@ const CONNECTORS = [
   },
 ];
 
+const PUNCHOUT_SUPPLIERS = [
+  {
+    id: "staples",
+    name: "Staples Advantage",
+    status: "Enabled",
+    protocol: "cXML",
+    sso: "SAML SSO",
+    sessionCount: 148,
+    successRate: 0.992,
+    avgReturnSeconds: 95,
+    lastCart: isoHoursAgo(4),
+    coverage: ["Office supplies", "Facilities", "Janitorial"],
+    notes:
+      "Routes cart accounting splits to facilities cost centres and enforces contract pricing before submission.",
+  },
+  {
+    id: "cdw",
+    name: "CDW Technology",
+    status: "Enabled",
+    protocol: "cXML",
+    sso: "OAuth SSO",
+    sessionCount: 96,
+    successRate: 0.987,
+    avgReturnSeconds: 110,
+    lastCart: isoHoursAgo(8),
+    coverage: ["Laptops & hardware", "Peripherals", "Software renewals"],
+    notes:
+      "Maps requester identity through OAuth, then returns carts with asset tags and warranty SKUs attached.",
+  },
+  {
+    id: "grainger",
+    name: "Grainger",
+    status: "In progress",
+    protocol: "OCI",
+    sso: "SAML SSO",
+    sessionCount: 42,
+    successRate: 0.978,
+    avgReturnSeconds: 138,
+    lastCart: isoHoursAgo(26),
+    coverage: ["MRO", "Safety", "Facilities"],
+    notes:
+      "User acceptance testing covers multi-ship-to carts and budget checks before enabling for all requesters.",
+  },
+];
+
 const AUTOMATIONS = [
   {
     title: "REST & GraphQL APIs",
@@ -102,10 +147,39 @@ export default function Integrations() {
   const connectedCount = CONNECTORS.filter((connector) =>
     ["connected", "enabled", "ready"].includes(normalizeStatus(connector.status))
   ).length;
-  const punchoutCount = CONNECTORS.filter((connector) => connector.type === "punchout").length;
+  const punchoutSuppliers = PUNCHOUT_SUPPLIERS;
+  const punchoutCount = punchoutSuppliers.length
+    ? punchoutSuppliers.length
+    : CONNECTORS.filter((connector) => connector.type === "punchout").length;
   const automationCount = AUTOMATIONS.length;
   const cadences = Array.from(new Set(CONNECTORS.map((connector) => connector.cadence).filter(Boolean)));
   const cadenceSummary = cadences.join(" • ");
+
+  const activePunchout = punchoutSuppliers.filter((supplier) =>
+    ["connected", "enabled"].includes(normalizeStatus(supplier.status))
+  ).length;
+  const punchoutSessions = punchoutSuppliers.reduce(
+    (sum, supplier) => sum + toNumber(supplier.sessionCount),
+    0
+  );
+  const averageReturnSeconds = average(
+    punchoutSuppliers.map((supplier) => toNumber(supplier.avgReturnSeconds))
+  );
+  const averageSuccessRate = average(
+    punchoutSuppliers.map((supplier) => toNumber(supplier.successRate))
+  );
+  const protocols = Array.from(
+    new Set(punchoutSuppliers.map((supplier) => supplier.protocol).filter(Boolean))
+  );
+  const ssoMethods = Array.from(
+    new Set(punchoutSuppliers.map((supplier) => supplier.sso).filter(Boolean))
+  );
+  const handshakeSummary = [
+    protocols.length ? `Protocols: ${protocols.join(" • ")}` : "",
+    ssoMethods.length ? `SSO: ${ssoMethods.join(" • ")}` : "",
+  ]
+    .filter(Boolean)
+    .join(" — ");
 
   return (
     <div className="space-y-6">
@@ -129,6 +203,49 @@ export default function Integrations() {
       </Card>
 
       <Card id="punchout">
+        <CardHeader
+          title="PunchOut integration hub"
+          subtitle="Monitor supplier storefronts, protocols, and session performance"
+          actions={
+            <Link
+              className="inline-flex items-center gap-1 text-sm font-medium text-blue-700"
+              to="/app/catalog"
+            >
+              Map categories <ArrowUpRight size={16} />
+            </Link>
+          }
+        />
+        <CardBody className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <IntegrationMetric label="Active PunchOut suppliers" value={activePunchout} />
+            <IntegrationMetric label="Monthly sessions" value={punchoutSessions} />
+            <IntegrationMetric
+              label="Avg cart return"
+              value={averageReturnSeconds ? formatDuration(averageReturnSeconds) : "Calibrating"}
+              isText
+            />
+            <IntegrationMetric
+              label="Success rate"
+              value={averageSuccessRate ? formatPercent(averageSuccessRate) : "Tracking"}
+              isText
+            />
+          </div>
+          {handshakeSummary && (
+            <div className="text-xs text-blue-700">{handshakeSummary}</div>
+          )}
+          <div className="space-y-3">
+            {punchoutSuppliers.map((supplier) => (
+              <PunchoutConnectorRow key={supplier.id} connector={supplier} />
+            ))}
+          </div>
+          <div className="rounded-2xl border border-dashed border-blue-200 bg-blue-50/60 px-4 py-3 text-xs text-blue-700">
+            cXML transaction logs and OCI sessions are archived for 90 days. Download transcripts from the integration audit
+            log before closing the month-end checklist.
+          </div>
+        </CardBody>
+      </Card>
+
+      <Card id="connectors">
         <CardHeader
           title="Connectors"
           subtitle="Certified integrations for punchout, ERP, AP automation, and analytics"
@@ -232,6 +349,53 @@ function ConnectorRow({ connector }) {
   );
 }
 
+function PunchoutConnectorRow({ connector }) {
+  const { name, status, protocol, sso, sessionCount, successRate, avgReturnSeconds, lastCart, coverage, notes } = connector;
+  const sessions = toNumber(sessionCount);
+  const success = toNumber(successRate);
+  const returnSeconds = toNumber(avgReturnSeconds);
+  const coverageList = ensureArray(coverage);
+
+  return (
+    <div className="space-y-2 rounded-2xl border border-blue-100 bg-blue-50/60 px-3 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-medium text-blue-800">{name}</span>
+          <StatusBadge status={status} />
+        </div>
+        <span className="text-xs text-blue-700">
+          {protocol}
+          {sso ? ` • ${sso}` : ""}
+        </span>
+      </div>
+      {notes ? <p className="text-sm text-blue-700">{notes}</p> : null}
+      <div className="flex flex-wrap items-center gap-3 text-xs text-blue-700">
+        <span>
+          {sessions > 0
+            ? `${sessions.toLocaleString()} session${sessions === 1 ? "" : "s"} this month`
+            : "Enable tracking to start sessions"}
+        </span>
+        {success > 0 ? <span>{formatPercent(success)} success</span> : <span>Success metrics pending</span>}
+        {returnSeconds > 0 ? (
+          <span>{formatDuration(returnSeconds)} avg cart return</span>
+        ) : (
+          <span>Cart return tests pending</span>
+        )}
+        <span>Last cart {formatRelativeTime(lastCart)}</span>
+      </div>
+      {coverageList.length ? (
+        <ul className="flex flex-wrap gap-2 text-xs text-blue-700">
+          {coverageList.map((item) => (
+            <li key={item} className="rounded-full bg-white/60 px-2 py-1">
+              {item}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
 function AutomationRow({ item }) {
   const { icon: Icon, title, description } = item;
   return (
@@ -264,9 +428,71 @@ function StatusBadge({ status }) {
   );
 }
 
+function average(values) {
+  const filtered = values.map((value) => Number(value)).filter((value) => Number.isFinite(value) && value > 0);
+  if (!filtered.length) return 0;
+  const total = filtered.reduce((sum, value) => sum + value, 0);
+  return total / filtered.length;
+}
+
+function toNumber(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+}
+
 function normalizeStatus(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase()
     .replace(/[\s_]+/g, "-");
+}
+
+function formatDuration(seconds) {
+  const totalSeconds = Math.round(Number(seconds));
+  if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return "";
+  const minutes = Math.floor(totalSeconds / 60);
+  const remaining = totalSeconds % 60;
+  if (minutes <= 0) {
+    return `${remaining}s`;
+  }
+  return `${minutes}m ${remaining.toString().padStart(2, "0")}s`;
+}
+
+function formatPercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return "";
+  const percentage = number > 1 ? number : number * 100;
+  return `${percentage.toFixed(1)}%`;
+}
+
+function formatRelativeTime(value) {
+  if (!value) return "not yet recorded";
+  const date = new Date(value);
+  const time = date.getTime();
+  if (Number.isNaN(time)) return "not yet recorded";
+  const diffMs = Date.now() - time;
+  if (diffMs <= 0) return "just now";
+  const diffMinutes = Math.floor(diffMs / 60000);
+  if (diffMinutes < 1) return "just now";
+  if (diffMinutes < 60) return `${diffMinutes} min ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} hr${diffHours === 1 ? "" : "s"} ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+}
+
+function ensureArray(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return String(value)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function isoHoursAgo(hours) {
+  const date = new Date();
+  date.setMinutes(0, 0, 0);
+  date.setHours(date.getHours() - Number(hours || 0));
+  return date.toISOString();
 }
