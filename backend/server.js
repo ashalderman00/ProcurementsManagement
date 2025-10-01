@@ -1543,6 +1543,65 @@ app.get('/api/requests/:id/files', authRequired, async (req, res) => {
   res.json(rows);
 });
 
+async function syncOrderRequestLink(nextOrder, previousOrder = null) {
+  try {
+    const prevHasLink =
+      previousOrder &&
+      Object.prototype.hasOwnProperty.call(previousOrder, 'request_id') &&
+      previousOrder.request_id !== null;
+    const prevHasPoNumber =
+      prevHasLink &&
+      Object.prototype.hasOwnProperty.call(previousOrder, 'po_number') &&
+      previousOrder.po_number !== null;
+    const shouldClear =
+      prevHasPoNumber &&
+      (!nextOrder ||
+        !Object.prototype.hasOwnProperty.call(nextOrder, 'request_id') ||
+        nextOrder.request_id !== previousOrder.request_id ||
+        nextOrder.po_number !== previousOrder.po_number);
+
+    if (shouldClear) {
+      const params = [previousOrder.request_id, previousOrder.po_number];
+      await pool
+        .query(
+          'UPDATE requests SET po_number=NULL WHERE id=$1 AND po_number=$2',
+          params
+        )
+        .catch(() => {});
+    }
+
+    if (
+      nextOrder &&
+      Object.prototype.hasOwnProperty.call(nextOrder, 'request_id') &&
+      nextOrder.request_id !== null
+    ) {
+      const sets = [];
+      const values = [];
+      let index = 1;
+
+      if (Object.prototype.hasOwnProperty.call(nextOrder, 'po_number')) {
+        sets.push(`po_number=$${index}`);
+        values.push(nextOrder.po_number || null);
+        index += 1;
+      }
+      if (Object.prototype.hasOwnProperty.call(nextOrder, 'vendor_id')) {
+        sets.push(`vendor_id=$${index}`);
+        values.push(nextOrder.vendor_id || null);
+        index += 1;
+      }
+
+      if (sets.length) {
+        values.push(nextOrder.request_id);
+        await pool
+          .query(`UPDATE requests SET ${sets.join(', ')} WHERE id=$${index}`, values)
+          .catch(() => {});
+      }
+    }
+  } catch (error) {
+    console.warn('order-request sync failed', error);
+  }
+}
+
 // ===== purchase orders =====
 app.get('/api/orders', async (_req, res) => {
   try {
@@ -1649,6 +1708,12 @@ app.post(
         expected_date: parsedExpected.value,
         notes,
       });
+
+      if (!created) {
+        return res.status(500).json({ error: 'failed to create order' });
+      }
+
+      await syncOrderRequestLink(created);
 
       res.status(201).json(created);
     } catch (error) {
@@ -1762,8 +1827,12 @@ app.patch(
     }
 
     try {
+      const existing = await Orders.findById(orderId);
+      if (!existing) return res.status(404).json({ error: 'order not found' });
+
       const updated = await Orders.update(orderId, updates);
       if (!updated) return res.status(404).json({ error: 'order not found' });
+      await syncOrderRequestLink(updated, existing);
       res.json(updated);
     } catch (error) {
       console.error('orders.update.error', error);
@@ -1782,8 +1851,12 @@ app.delete(
       return res.status(400).json({ error: 'invalid order id' });
     }
     try {
+      const existing = await Orders.findById(orderId);
+      if (!existing) return res.status(404).json({ error: 'order not found' });
+
       const removed = await Orders.remove(orderId);
       if (!removed) return res.status(404).json({ error: 'order not found' });
+      await syncOrderRequestLink(null, existing);
       res.status(204).end();
     } catch (error) {
       console.error('orders.delete.error', error);
